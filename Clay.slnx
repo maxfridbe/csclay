@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/examples/">
+    <Project Path="examples/Clay.Demo/Clay.Demo.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Clay/Clay.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Clay.Tests/Clay.Tests.csproj" />
+  </Folder>
+</Solution>
