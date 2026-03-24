@@ -1,6 +1,6 @@
 # csclay (Clay C# Port)
 
-[![Build Status](https://github.com/yourusername/csclay/actions/workflows/dotnet.yml/badge.svg)](https://github.com/yourusername/csclay/actions)
+[![Build Status](https://github.com/maxfridbe/csclay/actions/workflows/dotnet.yml/badge.svg)](https://github.com/maxfridbe/csclay/actions)
 [![NuGet Version](https://img.shields.io/nuget/v/csclay.svg)](https://www.nuget.org/packages/csclay)
 
 **csclay** is a high-performance, single-file (conceptually) 2D UI layout library for C#, ported from the original [Clay](https://github.com/nicbarker/clay) C library. It provides microsecond layout performance and a declarative, flexbox-like model with **zero garbage collection allocations** in the core layout loop.
