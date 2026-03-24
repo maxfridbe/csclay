@@ -4,6 +4,12 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Version>0.1.0</Version>
+    <Description>Pure C# port of the Clay high-performance UI layout library.</Description>
+    <PackageProjectUrl>https://github.com/yourusername/csclay</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/yourusername/csclay</RepositoryUrl>
+    <PackageLicenseExpression>Zlib</PackageLicenseExpression>
+    <PackageTags>ui;layout;game-dev;immediate-mode;flexbox</PackageTags>
   </PropertyGroup>
 
 </Project>
