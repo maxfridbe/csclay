@@ -1,0 +1,35 @@
+    private void CalculateFinalLayout()
+    {
+        // 1. Initial X sizing (Fixed, Percent)
+        // 2. Bottom-up FIT sizing (Width)
+        UpdateFitSizingBottomUp();
+        // 3. Flex distribution X (Grow)
+        SizeContainersAlongAxis(true); 
+
+        // 4. Wrap text based on established Width
+        WrapText();
+
+        // 5. Bottom-up FIT sizing (Height)
+        UpdateFitSizingBottomUp();
+        // 6. Flex distribution Y (Grow)
+        SizeContainersAlongAxis(false);
+
+        // Sort tree roots by z-index (simple bubble sort as in original Clay)
+        var roots = GetLayoutElementTreeRoots();
+        int sortMax = _layoutElementTreeRootsCount - 1;
+        while (sortMax > 0)
+        {
+            for (int i = 0; i < sortMax; i++)
+            {
+                if (roots[i + 1].ZIndex < roots[i].ZIndex)
+                {
+                    var temp = roots[i];
+                    roots[i] = roots[i + 1];
+                    roots[i + 1] = temp;
+                }
+            }
+            sortMax--;
+        }
+
+        CalculatePositions();
+    }

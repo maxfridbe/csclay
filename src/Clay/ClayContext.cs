@@ -442,9 +442,18 @@ var roots = GetLayoutElementTreeRoots();        roots[_layoutElementTreeRootsCou
 
     private void CalculateFinalLayout()
     {
-        SizeContainersAlongAxis(true);
+        // 1. Initial X sizing (Fixed, Percent)
+        // 2. Bottom-up FIT sizing (Width)
+        UpdateFitSizingBottomUp();
+        // 3. Flex distribution X (Grow)
+        SizeContainersAlongAxis(true); 
+
+        // 4. Wrap text based on established Width
         WrapText();
-        UpdateHeightsBottomUp();
+
+        // 5. Bottom-up FIT sizing (Height)
+        UpdateFitSizingBottomUp();
+        // 6. Flex distribution Y (Grow)
         SizeContainersAlongAxis(false);
 
         // Sort tree roots by z-index (simple bubble sort as in original Clay)
@@ -704,36 +713,59 @@ var roots = GetLayoutElementTreeRoots();        roots[_layoutElementTreeRootsCou
         }
     }
 
-    private void UpdateHeightsBottomUp()
+    private void UpdateFitSizingBottomUp()
     {
         var elements = GetLayoutElements();
         var allChildren = GetLayoutElementChildren();
         for (int i = _layoutElementsCount - 1; i >= 0; i--)
         {
             ref var element = ref elements[i];
-            if (element.ChildrenCount == 0) continue;
+            if (element.ChildrenCount == 0 && element.ElementType != ElementType.Text) continue;
 
-            float contentHeight = (float)(element.Config.Padding.Top + element.Config.Padding.Bottom);
-            if (element.Config.LayoutDirection == LayoutDirection.TopToBottom)
+            if (element.ElementType == ElementType.Text)
             {
-                for (int j = 0; j < element.ChildrenCount; j++)
-                {
-                    int childIdx = allChildren[element.ChildrenStartIndex + j];
-                    contentHeight += elements[childIdx].Dimensions.Height;
-                }
-                contentHeight += Math.Max(0, element.ChildrenCount - 1) * element.Config.ChildGap;
+                // Text elements already have their dimensions set by measurement/wrapping
+                continue;
             }
-            else
+
+            float contentWidth = (float)(element.Config.Padding.Left + element.Config.Padding.Right);
+            float contentHeight = (float)(element.Config.Padding.Top + element.Config.Padding.Bottom);
+
+            if (element.Config.LayoutDirection == LayoutDirection.LeftToRight)
             {
                 float maxChildHeight = 0;
                 for (int j = 0; j < element.ChildrenCount; j++)
                 {
                     int childIdx = allChildren[element.ChildrenStartIndex + j];
-                    maxChildHeight = Math.Max(maxChildHeight, elements[childIdx].Dimensions.Height);
+                    ref var child = ref elements[childIdx];
+                    if (child.ElementType == ElementType.Floating) continue;
+
+                    contentWidth += child.Dimensions.Width;
+                    maxChildHeight = Math.Max(maxChildHeight, child.Dimensions.Height);
                 }
+                contentWidth += Math.Max(0, element.ChildrenCount - 1) * element.Config.ChildGap;
                 contentHeight += maxChildHeight;
             }
+            else // TopToBottom
+            {
+                float maxChildWidth = 0;
+                for (int j = 0; j < element.ChildrenCount; j++)
+                {
+                    int childIdx = allChildren[element.ChildrenStartIndex + j];
+                    ref var child = ref elements[childIdx];
+                    if (child.ElementType == ElementType.Floating) continue;
 
+                    contentHeight += child.Dimensions.Height;
+                    maxChildWidth = Math.Max(maxChildWidth, child.Dimensions.Width);
+                }
+                contentHeight += Math.Max(0, element.ChildrenCount - 1) * element.Config.ChildGap;
+                contentWidth += maxChildWidth;
+            }
+
+            if (element.Config.Sizing.Width.Type == SizingType.Fit)
+            {
+                element.Dimensions.Width = contentWidth;
+            }
             if (element.Config.Sizing.Height.Type == SizingType.Fit)
             {
                 element.Dimensions.Height = contentHeight;
@@ -963,12 +995,68 @@ var roots = GetLayoutElementTreeRoots();        roots[_layoutElementTreeRootsCou
                         int childrenCount = currentElement.ChildrenCount;
                         
                         int validChildrenCount = 0;
+                        float totalContentWidth = 0;
+                        float totalContentHeight = 0;
+                        float maxChildWidth = 0;
+                        float maxChildHeight = 0;
+
                         for (int j = 0; j < childrenCount; j++)
                         {
                             int childIdx = allChildren[currentElement.ChildrenStartIndex + j];
                             ref LayoutElement child = ref elements[childIdx];
-                            if (child.ElementType != ElementType.Floating) validChildrenCount++;
+                            if (child.ElementType != ElementType.Floating)
+                            {
+                                validChildrenCount++;
+                                if (currentElement.Config.LayoutDirection == LayoutDirection.LeftToRight)
+                                {
+                                    totalContentWidth += child.Dimensions.Width;
+                                    maxChildHeight = Math.Max(maxChildHeight, child.Dimensions.Height);
+                                }
+                                else
+                                {
+                                    totalContentHeight += child.Dimensions.Height;
+                                    maxChildWidth = Math.Max(maxChildWidth, child.Dimensions.Width);
+                                }
+                            }
                         }
+
+                        if (validChildrenCount > 0)
+                        {
+                            if (currentElement.Config.LayoutDirection == LayoutDirection.LeftToRight)
+                            {
+                                totalContentWidth += (validChildrenCount - 1) * currentElement.Config.ChildGap;
+                                totalContentHeight = maxChildHeight;
+                            }
+                            else
+                            {
+                                totalContentHeight += (validChildrenCount - 1) * currentElement.Config.ChildGap;
+                                totalContentWidth = maxChildWidth;
+                            }
+                        }
+
+                        // Calculate starting offset based on alignment along the layout axis
+                        Vector2 alignmentOffset = new Vector2(0, 0);
+                        float availableWidth = currentElement.Dimensions.Width - (currentElement.Config.Padding.Left + currentElement.Config.Padding.Right);
+                        float availableHeight = currentElement.Dimensions.Height - (currentElement.Config.Padding.Top + currentElement.Config.Padding.Bottom);
+
+                        if (currentElement.Config.LayoutDirection == LayoutDirection.LeftToRight)
+                        {
+                            switch (currentElement.Config.ChildAlignment.X)
+                            {
+                                case LayoutAlignmentX.Center: alignmentOffset.X = (availableWidth - totalContentWidth) / 2; break;
+                                case LayoutAlignmentX.Right: alignmentOffset.X = availableWidth - totalContentWidth; break;
+                            }
+                        }
+                        else
+                        {
+                            switch (currentElement.Config.ChildAlignment.Y)
+                            {
+                                case LayoutAlignmentY.Center: alignmentOffset.Y = (availableHeight - totalContentHeight) / 2; break;
+                                case LayoutAlignmentY.Bottom: alignmentOffset.Y = availableHeight - totalContentHeight; break;
+                            }
+                        }
+
+                        currentNode.NextChildOffset += alignmentOffset;
 
                         int stackStartIndex = dfsCount;
                         dfsCount += validChildrenCount;
@@ -979,10 +1067,28 @@ var roots = GetLayoutElementTreeRoots();        roots[_layoutElementTreeRootsCou
                             int childIdx = allChildren[currentElement.ChildrenStartIndex + j];
                             ref LayoutElement child = ref elements[childIdx];
                             
-                            // Skip floating elements in normal flow
                             if (child.ElementType == ElementType.Floating) continue;
 
-                            Vector2 childPos = currentNode.Position + currentNode.NextChildOffset + scrollOffset;
+                            // Calculate individual alignment for the non-layout axis
+                            Vector2 individualOffset = new Vector2(0, 0);
+                            if (currentElement.Config.LayoutDirection == LayoutDirection.LeftToRight)
+                            {
+                                switch (currentElement.Config.ChildAlignment.Y)
+                                {
+                                    case LayoutAlignmentY.Center: individualOffset.Y = (availableHeight - child.Dimensions.Height) / 2; break;
+                                    case LayoutAlignmentY.Bottom: individualOffset.Y = availableHeight - child.Dimensions.Height; break;
+                                }
+                            }
+                            else
+                            {
+                                switch (currentElement.Config.ChildAlignment.X)
+                                {
+                                    case LayoutAlignmentX.Center: individualOffset.X = (availableWidth - child.Dimensions.Width) / 2; break;
+                                    case LayoutAlignmentX.Right: individualOffset.X = availableWidth - child.Dimensions.Width; break;
+                                }
+                            }
+
+                            Vector2 childPos = currentNode.Position + currentNode.NextChildOffset + scrollOffset + individualOffset;
                             
                             int newNodeStackIdx = stackStartIndex + (validChildrenCount - 1 - addedCount);
                             dfsBuffer[newNodeStackIdx] = new LayoutElementTreeNode

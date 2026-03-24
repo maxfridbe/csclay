@@ -14,11 +14,12 @@ mkdir -p $OUTPUT_DIR
 
 # 1. Build and Test
 echo "Running tests..."
-dotnet test tests/Clay.Tests/Clay.Tests.csproj -c Release
+dotnet test Clay.slnx -c Release
 
-# 2. Pack NuGet Package
-echo "Creating NuGet package..."
-dotnet pack $SRC_DIR/$PROJECT_NAME.csproj -c Release -o $OUTPUT_DIR
+# 2. Pack NuGet Packages
+echo "Creating NuGet packages..."
+dotnet pack src/Clay/Clay.csproj -c Release -o $OUTPUT_DIR
+dotnet pack src/CSClay.Renderers.SkiaSharp/CSClay.Renderers.SkiaSharp.csproj -c Release -o $OUTPUT_DIR
 
 # 3. Build Demo (Optional check)
 echo "Building demo..."

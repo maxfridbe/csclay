@@ -30,7 +30,14 @@ public class SkiaSharpRenderer
                     var radius = cmd.RenderData.Rectangle.CornerRadius;
                     if (radius.TopLeft > 0 || radius.TopRight > 0 || radius.BottomLeft > 0 || radius.BottomRight > 0)
                     {
-                        canvas.DrawRoundRect(rect, radius.TopLeft, radius.TopLeft, paint);
+                        var roundRect = new SKRoundRect(rect);
+                        roundRect.SetRectRadii(rect, new[] { 
+                            new SKPoint(radius.TopLeft, radius.TopLeft),
+                            new SKPoint(radius.TopRight, radius.TopRight),
+                            new SKPoint(radius.BottomRight, radius.BottomRight),
+                            new SKPoint(radius.BottomLeft, radius.BottomLeft) 
+                        });
+                        canvas.DrawRoundRect(roundRect, paint);
                     }
                     else
                     {
@@ -50,6 +57,14 @@ public class SkiaSharpRenderer
                     
                     var metrics = font.Metrics;
                     canvas.DrawText(lineText, rect.Left, rect.Top - metrics.Ascent, SKTextAlign.Left, font, paint);
+                    break;
+
+                case RenderCommandType.Image:
+                    paint.Color = SKColors.Gray;
+                    paint.Style = SKPaintStyle.Stroke;
+                    canvas.DrawRect(rect, paint);
+                    canvas.DrawLine(rect.Left, rect.Top, rect.Right, rect.Bottom, paint);
+                    canvas.DrawLine(rect.Right, rect.Top, rect.Left, rect.Bottom, paint);
                     break;
 
                 case RenderCommandType.ScissorStart:
