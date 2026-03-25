@@ -33,12 +33,36 @@ jobs:
     - name: Pack SkiaSharp Renderer
       run: dotnet pack src/CSClay.Renderers.SkiaSharp/CSClay.Renderers.SkiaSharp.csproj --no-build -c Release -o artifacts
 
+    - name: Pack Raylib Renderer
+      run: dotnet pack src/CSClay.Renderers.Raylib/CSClay.Renderers.Raylib.csproj --no-build -c Release -o artifacts
+
     - name: Upload NuGet Package
       uses: actions/upload-artifact@v4
       with:
         name: nuget-package
         path: artifacts/*.nupkg
 
-    - name: Push to GitHub Packages
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      run: dotnet nuget push "artifacts/*.nupkg" --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download NuGet Packages
+        uses: actions/download-artifact@v4
+        with:
+          name: nuget-package
+          path: artifacts/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.${{ github.run_number }}
+          name: Release v0.1.${{ github.run_number }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: artifacts/*.nupkg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
