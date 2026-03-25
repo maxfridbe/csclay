@@ -92,17 +92,8 @@ public class ClayContext
     {
         _pointerPosition = position;
         _isPointerDown = isPointerDown;
-        
-        _pointerOverIds.Clear();
-        // Check which elements the pointer is over based on PREVIOUS frame's bounding boxes
-        foreach (var item in _persistentElementState.Values)
-        {
-            if (IsPointInside(position, item.BoundingBox))
-            {
-                _pointerOverIds.Add(item.Id);
-            }
-        }
     }
+
 
     public bool IsHovered(uint id)
     {
@@ -119,6 +110,16 @@ public class ClayContext
 
     public void BeginLayout(Dimensions windowSize, int maxElements = 8192, int maxChildren = 16384)
     {
+        // Check which elements the pointer is over based on the stable persistent state from the PREVIOUS frame
+        _pointerOverIds.Clear();
+        foreach (var item in _persistentElementState.Values)
+        {
+            if (IsPointInside(_pointerPosition, item.BoundingBox))
+            {
+                _pointerOverIds.Add(item.Id);
+            }
+        }
+
         _arena.Reset();
         _strings.Clear();
         _idToElementIndex.Clear();
@@ -469,24 +470,25 @@ _customConfigsCount = 0;
         // 6. Flex distribution Y (Grow)
         SizeContainersAlongAxis(false);
 
-        // Sort tree roots by z-index (simple bubble sort as in original Clay)
-        var roots = GetLayoutElementTreeRoots();
-        int sortMax = _layoutElementTreeRootsCount - 1;
+        // Calculate positions (this also fills the render commands array)
+        CalculatePositions();
+
+        // Sort ALL render commands by Z-index (simple bubble sort)
+        var renderCommands = GetRenderCommands().Slice(0, _renderCommandsCount);
+        int sortMax = _renderCommandsCount - 1;
         while (sortMax > 0)
         {
             for (int i = 0; i < sortMax; i++)
             {
-                if (roots[i + 1].ZIndex < roots[i].ZIndex)
+                if (renderCommands[i + 1].ZIndex < renderCommands[i].ZIndex)
                 {
-                    var temp = roots[i];
-                    roots[i] = roots[i + 1];
-                    roots[i + 1] = temp;
+                    var temp = renderCommands[i];
+                    renderCommands[i] = renderCommands[i + 1];
+                    renderCommands[i + 1] = temp;
                 }
             }
             sortMax--;
         }
-
-        CalculatePositions();
     }
 
     private void SizeContainersAlongAxis(bool xAxis)
@@ -812,12 +814,23 @@ _customConfigsCount = 0;
             // If it's a floating root, calculate its position based on parent
             if (rootElement.ElementType != ElementType.Text && rootElement.ConfigIndex >= 0 && root.ParentId != 0)
             {
-                if (_idToElementIndex.TryGetValue(root.ParentId, out int parentIdx))
+                BoundingBox parentBB = default;
+                bool parentFound = false;
+
+                if (root.ParentId == HashUtility.HashId("Clay__RootContainer", 0))
                 {
-                    ref var parentElement = ref elements[parentIdx];
+                    parentBB = new BoundingBox(0, 0, _layoutDimensions.Width, _layoutDimensions.Height);
+                    parentFound = true;
+                }
+                else if (_idToElementIndex.TryGetValue(root.ParentId, out int parentIdx))
+                {
+                    parentBB = elements[parentIdx].BoundingBox;
+                    parentFound = true;
+                }
+
+                if (parentFound)
+                {
                     ref var floatingConfig = ref floatingConfigs[rootElement.ConfigIndex];
-                    
-                    BoundingBox parentBB = parentElement.BoundingBox;
                     Vector2 targetPos = new Vector2(parentBB.X, parentBB.Y);
 
                     // Parent attach point

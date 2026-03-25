@@ -104,8 +104,9 @@ class Program
                     {
                         for (int i = 1; i <= 5; i++)
                         {
-                            var color = UI.Hovered() ? new Color(100, 150, 255) : new Color(70, 74, 82);
-                            Container($"item-{i}", c => c
+                            string itemId = $"sidebar-item-{i}";
+                            var color = UI.IsHovered(itemId) ? new Color(100, 150, 255) : new Color(70, 74, 82);
+                            Container(itemId, c => c
                                 .Sizing(Grow(), Fixed(40 * globalScale))
                                 .Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center)
                                 .Padding((ushort)(10 * globalScale), 0)
@@ -130,14 +131,15 @@ class Program
                             t => t.Size((ushort)(18 * globalScale)).Color(200, 200, 200).Wrap(TextWrapMode.Words));
 
                         // Modal Trigger Button
-                        var btnColor = UI.Hovered() ? new Color(80, 180, 100) : new Color(40, 140, 60);
-                        Container("modal-trigger", c => c.Padding((ushort)(20 * globalScale), (ushort)(10 * globalScale)), btnColor, () => 
+                        string modalBtnId = "modal-trigger";
+                        Container(modalBtnId, c => c.Padding((ushort)(20 * globalScale), (ushort)(10 * globalScale)), 
+                            UI.IsHovered(modalBtnId) ? new Color(80, 180, 100) : new Color(40, 140, 60), () => 
                         {
                             Text("󰒓 Open Settings", t => t.Size((ushort)(18 * globalScale)).Color(255, 255, 255));
                             
-                            if (Raylib.IsMouseButtonPressed(MouseButton.Left) && UI.Hovered())
+                            if (Raylib.IsMouseButtonPressed(MouseButton.Left) && UI.IsHovered(modalBtnId))
                             {
-                                showModal = !showModal;
+                                showModal = true;
                             }
                         });
 

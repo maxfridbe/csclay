@@ -35,6 +35,16 @@ public static class UI
         return Context.IsHovered(Context.GetCurrentElementId());
     }
 
+    public static bool IsHovered(string id)
+    {
+        return Context.IsHovered(GetElementId(id));
+    }
+
+    public static uint GetElementId(string id)
+    {
+        return HashUtility.HashId(id, Context.GetCurrentElementId());
+    }
+
     public static Span<RenderCommand> End()
     {
         return Context.EndLayout();
