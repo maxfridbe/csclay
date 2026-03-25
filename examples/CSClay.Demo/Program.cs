@@ -139,39 +139,39 @@ class Program
                             
                             if (Raylib.IsMouseButtonPressed(MouseButton.Left) && UI.Hovered())
                             {
-                                showModal = true;
+                                showModal = !showModal;
+                            }
+
+                            if (showModal)
+                            {
+                                // Render a popup menu attached to the button
+                                FloatingContainer("modal", 
+                                    l => l.Sizing(Fixed(300 * globalScale), Fit()),
+                                    f => f.Attach(FloatingAttachPoint.LeftTop, FloatingAttachPoint.LeftBottom, FloatingAttachToElement.Parent).ZIndex(1000).Offset(0, 5),
+                                    new Color(45, 49, 57, 240), // Slightly transparent
+                                    () => 
+                                    {
+                                        Container("modal-header", c => c.Sizing(Grow(), Fixed(50 * globalScale)).Padding((ushort)(15 * globalScale), 0).Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center), new Color(70, 74, 82), () => 
+                                        {
+                                            Text("󰒓 Settings Modal", t => t.Size((ushort)(20 * globalScale)).Color(255, 255, 255));
+                                            
+                                            // Close button
+                                            Container("close-btn", c => c.Align(LayoutAlignmentX.Right, LayoutAlignmentY.Center).Sizing(Grow(), Fit()), () => {
+                                                Text("󰅖 ", t => t.Size((ushort)(24 * globalScale)).Color(255, 100, 100));
+                                                if (Raylib.IsMouseButtonPressed(MouseButton.Left) && UI.Hovered()) showModal = false;
+                                            });
+                                        });
+
+                                        Container("modal-body", c => c.Direction(LayoutDirection.TopToBottom).Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale)).ChildGap((ushort)(15 * globalScale)), () => 
+                                        {
+                                            Text("󰄬 Setting 1: Enabled", t => t.Size((ushort)(18 * globalScale)).Color(200, 200, 200));
+                                            Text("󰄬 Setting 2: Performance Mode", t => t.Size((ushort)(18 * globalScale)).Color(200, 200, 200));
+                                            Text("󰄱 Setting 3: Beta Features", t => t.Size((ushort)(18 * globalScale)).Color(150, 150, 150));
+                                        });
+                                    }
+                                );
                             }
                         });
-
-                        if (showModal)
-                        {
-                            // Render a simple centered floating element
-                            FloatingContainer("modal", 
-                                l => l.Sizing(Fixed(400 * globalScale), Fixed(300 * globalScale)),
-                                f => f.Attach(FloatingAttachPoint.CenterCenter, FloatingAttachPoint.CenterCenter, FloatingAttachToElement.Root).ZIndex(1000),
-                                new Color(45, 49, 57, 240), // Slightly transparent
-                                () => 
-                                {
-                                    Container("modal-header", c => c.Sizing(Grow(), Fixed(50 * globalScale)).Padding((ushort)(15 * globalScale), 0).Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center), new Color(70, 74, 82), () => 
-                                    {
-                                        Text("󰒓 Settings Modal", t => t.Size((ushort)(20 * globalScale)).Color(255, 255, 255));
-                                        
-                                        // Close button
-                                        Container("close-btn", c => c.Align(LayoutAlignmentX.Right, LayoutAlignmentY.Center).Sizing(Grow(), Fit()), () => {
-                                            Text("󰅖 ", t => t.Size((ushort)(24 * globalScale)).Color(255, 100, 100));
-                                            if (Raylib.IsMouseButtonPressed(MouseButton.Left) && UI.Hovered()) showModal = false;
-                                        });
-                                    });
-
-                                    Container("modal-body", c => c.Direction(LayoutDirection.TopToBottom).Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale)).ChildGap((ushort)(15 * globalScale)), () => 
-                                    {
-                                        Text("󰄬 Setting 1: Enabled", t => t.Size((ushort)(18 * globalScale)).Color(200, 200, 200));
-                                        Text("󰄬 Setting 2: Performance Mode", t => t.Size((ushort)(18 * globalScale)).Color(200, 200, 200));
-                                        Text("󰄱 Setting 3: Beta Features", t => t.Size((ushort)(18 * globalScale)).Color(150, 150, 150));
-                                    });
-                                }
-                            );
-                        }
                     });
                 });
             });
