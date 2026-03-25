@@ -9,19 +9,21 @@ namespace CSClay.Demo;
 class Program
 {
     static bool showModal = false;
+    static float globalScale = 1.0f;
 
     static void Main()
     {
         const int screenWidth = 800;
         const int screenHeight = 600;
 
-        Raylib.InitWindow(screenWidth, screenHeight, "Clay C# - Fluent Raylib Demo");
+        Raylib.SetConfigFlags(ConfigFlags.ResizableWindow);
+        Raylib.InitWindow(screenWidth, screenHeight, "CSClay - Fluent Raylib Demo");
         Raylib.SetTargetFPS(60);
 
         // Load Nerd Font
         string fontPath = "assets/fonts/JetBrainsMonoNerdFont-Regular.ttf";
-        // We load a decent size and include enough characters for icons
-        Font nerdFont = Raylib.LoadFontEx(fontPath, 32, null, 0);
+        // We load a large size to allow for scaling without pixelation
+        Font nerdFont = Raylib.LoadFontEx(fontPath, 64, null, 0);
         Raylib.SetTextureFilter(nerdFont.Texture, TextureFilter.Bilinear);
 
         var arena = new ClayArena(1024 * 1024 * 10); // 10MB
@@ -37,6 +39,13 @@ class Program
 
         while (!Raylib.WindowShouldClose())
         {
+            // 0. Handle Scale Input
+            if (Raylib.IsKeyDown(KeyboardKey.LeftControl) || Raylib.IsKeyDown(KeyboardKey.RightControl))
+            {
+                if (Raylib.IsKeyPressed(KeyboardKey.Equal)) globalScale += 0.1f;
+                if (Raylib.IsKeyPressed(KeyboardKey.Minus)) globalScale = Math.Max(0.5f, globalScale - 0.1f);
+            }
+
             // 1. Update Interaction State
             var mousePos = Raylib.GetMousePosition();
             UI.SetPointerState(new CSClay.Vector2(mousePos.X, mousePos.Y), Raylib.IsMouseButtonDown(MouseButton.Left));
@@ -46,42 +55,42 @@ class Program
             
             Container("root", c => c
                 .Direction(LayoutDirection.TopToBottom)
-                .ChildGap(10)
-                .Padding(20, 20)
+                .ChildGap((ushort)(10 * globalScale))
+                .Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale))
                 .Sizing(Fixed(Raylib.GetScreenWidth()), Fixed(Raylib.GetScreenHeight()))
             , new Color(40, 44, 52), () => 
             {
                 Container("header", c => c
-                    .Sizing(Grow(), Fixed(60))
+                    .Sizing(Grow(), Fixed(60 * globalScale))
                     .Align(LayoutAlignmentX.Center, LayoutAlignmentY.Center)
                 , new Color(60, 64, 72), () => 
                 {
-                    Text("󰀘 CSCLAY PORT", t => t.Size(32).Color(255, 255, 255));
+                    Text("󰀘 CSCLAY PORT", t => t.Size((ushort)(32 * globalScale)).Color(255, 255, 255));
                 });
 
                 Container("body", c => c
                     .Direction(LayoutDirection.LeftToRight)
-                    .ChildGap(20)
+                    .ChildGap((ushort)(20 * globalScale))
                     .Sizing(Grow(), Grow())
                 , () => 
                 {
                     // Sidebar
                     Container("sidebar", c => c
-                        .Sizing(Fixed(200), Grow())
-                        .Padding(10, 10)
-                        .ChildGap(10)
+                        .Sizing(Fixed(200 * globalScale), Grow())
+                        .Padding((ushort)(10 * globalScale), (ushort)(10 * globalScale))
+                        .ChildGap((ushort)(10 * globalScale))
                     , new Color(50, 54, 62), () => 
                     {
                         for (int i = 1; i <= 5; i++)
                         {
                             var color = UI.Hovered() ? new Color(100, 150, 255) : new Color(70, 74, 82);
                             Container($"item-{i}", c => c
-                                .Sizing(Grow(), Fixed(40))
+                                .Sizing(Grow(), Fixed(40 * globalScale))
                                 .Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center)
-                                .Padding(10, 0)
+                                .Padding((ushort)(10 * globalScale), 0)
                             , color, () => 
                             {
-                                Text($"󰉋 Menu Item {i}", t => t.Size(18).Color(255, 255, 255));
+                                Text($"󰉋 Menu Item {i}", t => t.Size((ushort)(18 * globalScale)).Color(255, 255, 255));
                             });
                         }
                     });
@@ -89,20 +98,20 @@ class Program
                     // Content
                     Container("content", c => c
                         .Sizing(Grow(), Grow())
-                        .Padding(20, 20)
-                        .ChildGap(20)
+                        .Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale))
+                        .ChildGap((ushort)(20 * globalScale))
                     , new Color(30, 34, 42), () => 
                     {
-                        Text("Welcome to the Clay C# Port!", t => t.Size(24).Color(255, 255, 255));
+                        Text("Welcome to the Clay C# Port!", t => t.Size((ushort)(24 * globalScale)).Color(255, 255, 255));
                         
-                        Text("This is a high-performance, zero-allocation UI layout library ported from C. Click the button below to see a floating element!", 
-                            t => t.Size(18).Color(200, 200, 200).Wrap(TextWrapMode.Words));
+                        Text("This is a high-performance, zero-allocation UI layout library ported from C. Use Ctrl + and Ctrl - to scale the UI!", 
+                            t => t.Size((ushort)(18 * globalScale)).Color(200, 200, 200).Wrap(TextWrapMode.Words));
 
                         // Modal Trigger Button
                         var btnColor = UI.Hovered() ? new Color(80, 180, 100) : new Color(40, 140, 60);
-                        Container("modal-trigger", c => c.Padding(20, 10), btnColor, () => 
+                        Container("modal-trigger", c => c.Padding((ushort)(20 * globalScale), (ushort)(10 * globalScale)), btnColor, () => 
                         {
-                            Text("󰒓 Open Settings", t => t.Size(18).Color(255, 255, 255));
+                            Text("󰒓 Open Settings", t => t.Size((ushort)(18 * globalScale)).Color(255, 255, 255));
                             
                             if (Raylib.IsMouseButtonPressed(MouseButton.Left) && UI.Hovered())
                             {
@@ -114,27 +123,27 @@ class Program
                         {
                             // Render a simple centered floating element
                             FloatingContainer("modal", 
-                                l => l.Sizing(Fixed(400), Fixed(300)),
+                                l => l.Sizing(Fixed(400 * globalScale), Fixed(300 * globalScale)),
                                 f => f.Attach(FloatingAttachPoint.CenterCenter, FloatingAttachPoint.CenterCenter, FloatingAttachToElement.Root).ZIndex(1000),
                                 new Color(45, 49, 57, 240), // Slightly transparent
                                 () => 
                                 {
-                                    Container("modal-header", c => c.Sizing(Grow(), Fixed(50)).Padding(15, 0).Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center), new Color(70, 74, 82), () => 
+                                    Container("modal-header", c => c.Sizing(Grow(), Fixed(50 * globalScale)).Padding((ushort)(15 * globalScale), 0).Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center), new Color(70, 74, 82), () => 
                                     {
-                                        Text("󰒓 Settings Modal", t => t.Size(20).Color(255, 255, 255));
+                                        Text("󰒓 Settings Modal", t => t.Size((ushort)(20 * globalScale)).Color(255, 255, 255));
                                         
                                         // Close button
                                         Container("close-btn", c => c.Align(LayoutAlignmentX.Right, LayoutAlignmentY.Center).Sizing(Grow(), Fit()), () => {
-                                            Text("󰅖 ", t => t.Size(24).Color(255, 100, 100));
+                                            Text("󰅖 ", t => t.Size((ushort)(24 * globalScale)).Color(255, 100, 100));
                                             if (Raylib.IsMouseButtonPressed(MouseButton.Left) && UI.Hovered()) showModal = false;
                                         });
                                     });
 
-                                    Container("modal-body", c => c.Padding(20, 20).ChildGap(15), () => 
+                                    Container("modal-body", c => c.Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale)).ChildGap((ushort)(15 * globalScale)), () => 
                                     {
-                                        Text("󰄬 Setting 1: Enabled", t => t.Size(18).Color(200, 200, 200));
-                                        Text("󰄬 Setting 2: Performance Mode", t => t.Size(18).Color(200, 200, 200));
-                                        Text("󰄱 Setting 3: Beta Features", t => t.Size(18).Color(150, 150, 150));
+                                        Text("󰄬 Setting 1: Enabled", t => t.Size((ushort)(18 * globalScale)).Color(200, 200, 200));
+                                        Text("󰄬 Setting 2: Performance Mode", t => t.Size((ushort)(18 * globalScale)).Color(200, 200, 200));
+                                        Text("󰄱 Setting 3: Beta Features", t => t.Size((ushort)(18 * globalScale)).Color(150, 150, 150));
                                     });
                                 }
                             );
@@ -149,9 +158,6 @@ class Program
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Raylib_cs.Color.Black);
 
-            // We need to pass the font to our renderer or handle it globally.
-            // Since our current RaylibRenderer is simple, let's update it to support custom fonts or just use our nerd font here.
-            // For now, I will modify the Render loop to use the loaded font.
             RenderWithNerdFont(commands, context, nerdFont);
 
             Raylib.EndDrawing();
@@ -161,7 +167,6 @@ class Program
         Raylib.CloseWindow();
     }
 
-    // Temporary helper to render with the nerd font until RaylibRenderer is font-aware
     static void RenderWithNerdFont(Span<RenderCommand> commands, ClayContext context, Font font)
     {
         foreach (var cmd in commands)
