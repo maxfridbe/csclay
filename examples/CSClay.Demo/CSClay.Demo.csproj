@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Clay\Clay.csproj" />
+    <ProjectReference Include="..\..\src\CSClay\CSClay.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,8 +1,8 @@
 using Raylib_cs;
-using Clay;
+using CSClay;
 using Color = Clay.Color;
 
-namespace Clay.Demo;
+namespace CSClay.Demo;
 
 class Program
 {

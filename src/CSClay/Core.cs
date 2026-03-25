@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Clay;
+namespace CSClay;
 
 public struct Color
 {
@@ -181,6 +181,23 @@ public struct RectangleRenderData
     public CornerRadius CornerRadius;
 }
 
+public struct BorderRenderData
+{
+    public BorderConfig Config;
+}
+
+public struct ImageRenderData
+{
+    public Color BackgroundColor;
+    public CornerRadius CornerRadius;
+    public uint ImageDataId;
+}
+
+public struct CustomRenderData
+{
+    public uint CustomDataId;
+}
+
 public struct TextRenderData
 {
     public Color TextColor;
@@ -196,6 +213,9 @@ public struct RenderData
 {
     [FieldOffset(0)] public RectangleRenderData Rectangle;
     [FieldOffset(0)] public TextRenderData Text;
+    [FieldOffset(0)] public BorderRenderData Border;
+    [FieldOffset(0)] public ImageRenderData Image;
+    [FieldOffset(0)] public CustomRenderData Custom;
 }
 
 public struct RenderCommand

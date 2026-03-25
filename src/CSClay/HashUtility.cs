@@ -1,6 +1,6 @@
 using System;
 
-namespace Clay;
+namespace CSClay;
 
 internal static class HashUtility
 {

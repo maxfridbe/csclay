@@ -27,8 +27,11 @@ jobs:
     - name: Test
       run: dotnet test --no-build --verbosity normal -c Release
 
-    - name: Pack
-      run: dotnet pack src/Clay/Clay.csproj --no-build -c Release -o artifacts
+    - name: Pack Core
+      run: dotnet pack src/CSClay/CSClay.csproj --no-build -c Release -o artifacts
+
+    - name: Pack SkiaSharp Renderer
+      run: dotnet pack src/CSClay.Renderers.SkiaSharp/CSClay.Renderers.SkiaSharp.csproj --no-build -c Release -o artifacts
 
     - name: Upload NuGet Package
       uses: actions/upload-artifact@v4

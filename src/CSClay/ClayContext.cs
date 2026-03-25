@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Clay;
+namespace CSClay;
 
 public delegate Dimensions TextMeasureDelegate(ReadOnlySpan<char> text, TextConfig config);
 
@@ -971,7 +971,8 @@ _customConfigsCount = 0;
                                 renderCommands[_renderCommandsCount++] = new RenderCommand
                                 {
                                     BoundingBox = currentElement.BoundingBox,
-                                    CommandType = RenderCommandType.ScissorStart, // Placeholder for border logic
+                                    CommandType = RenderCommandType.Border,
+                                    RenderData = new RenderData { Border = new BorderRenderData { Config = borderConfig } },
                                     Id = currentElement.Id,
                                     ZIndex = root.ZIndex
                                 };
@@ -987,6 +988,12 @@ _customConfigsCount = 0;
                                 {
                                     BoundingBox = currentElement.BoundingBox,
                                     CommandType = RenderCommandType.Image,
+                                    RenderData = new RenderData { Image = new ImageRenderData 
+                                    { 
+                                        BackgroundColor = imageConfig.BackgroundColor, 
+                                        CornerRadius = imageConfig.CornerRadius,
+                                        ImageDataId = imageConfig.ImageDataId
+                                    } },
                                     Id = currentElement.Id,
                                     ZIndex = root.ZIndex
                                 };
@@ -995,12 +1002,14 @@ _customConfigsCount = 0;
 
                         if (currentElement.ElementType == ElementType.Custom && currentElement.ConfigIndex >= 0)
                         {
+                            ref var customConfig = ref GetCustomConfigs()[currentElement.ConfigIndex];
                             if (_renderCommandsCount < _renderCommandsCapacity)
                             {
                                 renderCommands[_renderCommandsCount++] = new RenderCommand
                                 {
                                     BoundingBox = currentElement.BoundingBox,
                                     CommandType = RenderCommandType.Custom,
+                                    RenderData = new RenderData { Custom = new CustomRenderData { CustomDataId = customConfig.CustomDataId } },
                                     Id = currentElement.Id,
                                     ZIndex = root.ZIndex
                                 };

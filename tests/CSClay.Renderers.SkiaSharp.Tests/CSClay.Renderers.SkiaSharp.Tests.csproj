@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Clay\Clay.csproj" />
+    <ProjectReference Include="..\..\src\CSClay\CSClay.csproj" />
     <ProjectReference Include="..\..\src\CSClay.Renderers.SkiaSharp\CSClay.Renderers.SkiaSharp.csproj" />
   </ItemGroup>
 

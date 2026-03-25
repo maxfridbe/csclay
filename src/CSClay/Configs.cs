@@ -1,6 +1,6 @@
 using System;
 
-namespace Clay;
+namespace CSClay;
 
 public struct LayoutConfig
 {

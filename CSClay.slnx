@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/examples/">
+    <Project Path="examples/CSClay.Demo/CSClay.Demo.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/CSClay/CSClay.csproj" />
+    <Project Path="src/CSClay.Renderers.SkiaSharp/CSClay.Renderers.SkiaSharp.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/CSClay.Tests/CSClay.Tests.csproj" />
+    <Project Path="tests/CSClay.Renderers.SkiaSharp.Tests/CSClay.Renderers.SkiaSharp.Tests.csproj" />
+  </Folder>
+</Solution>

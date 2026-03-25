@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 
-namespace Clay;
+namespace CSClay;
 
 public static class UI
 {

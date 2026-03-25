@@ -1,18 +1,24 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Version>0.1.0</Version>
+    <Description>SkiaSharp renderer for the CSClay UI layout library.</Description>
+    <PackageProjectUrl>https://github.com/maxfridbe/CSClay</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/maxfridbe/CSClay.git</RepositoryUrl>
+    <PackageLicenseExpression>Zlib</PackageLicenseExpression>
+    <PackageTags>ui;layout;skia;skiasharp;renderer;CSClay</PackageTags>
+  </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Clay\Clay.csproj" />
+    <ProjectReference Include="..\CSClay\CSClay.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="SkiaSharp" Version="3.119.2" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="3.119.2" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
 
 </Project>

@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 
-namespace Clay;
+namespace CSClay;
 
 public class ClayArena
 {

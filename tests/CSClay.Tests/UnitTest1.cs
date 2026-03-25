@@ -1,4 +1,4 @@
-﻿namespace Clay.Tests;
+﻿namespace CSClay.Tests;
 
 public class UnitTest1
 {

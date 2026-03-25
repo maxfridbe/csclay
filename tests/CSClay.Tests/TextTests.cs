@@ -1,7 +1,7 @@
-using Clay;
+using CSClay;
 using Xunit;
 
-namespace Clay.Tests;
+namespace CSClay.Tests;
 
 public class TextTests
 {

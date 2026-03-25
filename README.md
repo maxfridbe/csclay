@@ -1,9 +1,12 @@
-# csclay (Clay C# Port)
+# CSClay
 
 [![Build Status](https://github.com/maxfridbe/csclay/actions/workflows/dotnet.yml/badge.svg)](https://github.com/maxfridbe/csclay/actions)
-[![NuGet Version](https://img.shields.io/nuget/v/csclay.svg)](https://www.nuget.org/packages/csclay)
+[![NuGet Version](https://img.shields.io/nuget/v/CSClay.svg)](https://www.nuget.org/packages/CSClay)
+[![NuGet Version](https://img.shields.io/nuget/v/CSClay.Renderers.SkiaSharp.svg)](https://www.nuget.org/packages/CSClay.Renderers.SkiaSharp)
 
-**csclay** is a high-performance, single-file (conceptually) 2D UI layout library for C#, ported from the original [Clay](https://github.com/nicbarker/clay) C library. It provides microsecond layout performance and a declarative, flexbox-like model with **zero garbage collection allocations** in the core layout loop.
+**CSClay** is a high-performance, 2D UI layout library for C#, ported from the original [Clay](https://github.com/nicbarker/clay) C library. It provides microsecond layout performance and a declarative, flexbox-like model with **zero garbage collection allocations** in the core layout loop.
+
+![Website Desktop Screenshot](assets/website_desktop.png)
 
 ---
 
@@ -21,7 +24,7 @@
 
 ## 🧠 Philosophy
 
-Like the original Clay, **csclay** treats UI layout as a pure calculation:
+Like the original Clay, **CSClay** treats UI layout as a pure calculation:
 1. **Input:** A hierarchy of elements and their constraints (LayoutConfig).
 2. **Process:** A multi-pass calculation (sizing along axes, text wrapping, and positioning).
 3. **Output:** A list of simple render commands.
@@ -32,11 +35,23 @@ It doesn't handle windowing, input events, or GPU rendering—it simply tells yo
 
 ## 🛠 Quick Start
 
-### 1. Initialization
+### 1. Installation
+
+Install the core library:
+```bash
+dotnet add package CSClay
+```
+
+(Optional) Install the SkiaSharp renderer:
+```bash
+dotnet add package CSClay.Renderers.SkiaSharp
+```
+
+### 2. Initialization
 Initialize the `ClayArena` and `ClayContext` with your screen dimensions.
 
 ```csharp
-using Clay;
+using CSClay;
 
 // Pre-allocate 4MB for the layout arena
 var arena = new ClayArena(1024 * 1024 * 4);
@@ -50,70 +65,68 @@ context.TextMeasure = (ReadOnlySpan<char> text, TextConfig config) => {
 };
 ```
 
-### 2. Declare Your Layout
+### 3. Declare Your Layout
 Use the declarative `UI` API in your update/render loop.
 
 ```csharp
 UI.Begin(arena, new Dimensions(800, 600));
 
 UI.Container("root", new LayoutConfig { 
-    LayoutDirection = LayoutDirection.LeftToRight,
-    Padding = new Padding(20, 20),
-    ChildGap = 10,
-    Sizing = new Sizing { Width = SizingAxis.Grow(), Height = SizingAxis.Grow() }
+    LayoutDirection = LayoutDirection.TopToBottom,
+    Sizing = new Sizing { Width = SizingAxis.Fixed(800), Height = SizingAxis.Fixed(600) }
 }, new Color(40, 44, 52), () => 
 {
-    // Sidebar
-    UI.Container("sidebar", new LayoutConfig { 
-        Sizing = new Sizing { Width = SizingAxis.Fixed(200), Height = SizingAxis.Grow() }
-    }, new Color(60, 64, 72), () => 
-    {
-        UI.Text("Sidebar Item", new TextConfig { FontSize = 18, TextColor = new Color(255, 255, 255) });
-    });
-
-    // Main Content
-    UI.Container("content", new LayoutConfig { 
-        Sizing = new Sizing { Width = SizingAxis.Grow(), Height = SizingAxis.Grow() }
-    }, () => 
-    {
-        UI.Text("Welcome to csclay!", new TextConfig { FontSize = 24, TextColor = new Color(255, 255, 255) });
-    });
+    UI.Text("Welcome to CSClay!", new TextConfig { FontSize = 24, TextColor = new Color(255, 255, 255) });
 });
 
 Span<RenderCommand> commands = UI.End();
 ```
 
-### 3. Render
-Iterate through the generated commands and call your drawing API.
+---
+
+## 🎨 Rendering with SkiaSharp
+
+The `CSClay.Renderers.SkiaSharp` package provides a built-in renderer for generating high-quality images or real-time graphics.
+
+### Example: Rendering a PNG
 
 ```csharp
-foreach (var cmd in commands)
-{
-    switch (cmd.CommandType)
-    {
-        case RenderCommandType.Rectangle:
-            DrawRect(cmd.BoundingBox, cmd.RenderData.Rectangle.Color);
-            break;
-        case RenderCommandType.Text:
-            DrawText(cmd.BoundingBox, cmd.RenderData.Text);
-            break;
-        case RenderCommandType.ScissorStart:
-            BeginScissor(cmd.BoundingBox);
-            break;
-        case RenderCommandType.ScissorEnd:
-            EndScissor();
-            break;
-    }
-}
+using CSClay;
+using CSClay.Renderers.SkiaSharp;
+using SkiaSharp;
+
+// 1. Setup Clay (as shown above)
+// ...
+
+// 2. Setup SkiaSharp Surface
+var info = new SKImageInfo(1200, 800);
+using var surface = SKSurface.Create(info);
+var canvas = surface.Canvas;
+canvas.Clear(SKColors.Transparent);
+
+// 3. Define Layout
+UI.Begin(arena, new Dimensions(1200, 800));
+// ... your UI layout here ...
+var commands = UI.End();
+
+// 4. Render with SkiaSharp
+SkiaSharpRenderer.Render(canvas, commands, context);
+
+// 5. Save to File
+using var image = surface.Snapshot();
+using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+using var stream = File.OpenWrite("output.png");
+data.SaveTo(stream);
 ```
 
 ---
 
 ## 📂 Project Structure
 
-- **`src/Clay/`**: The core library implementation.
-- **`examples/Clay.Demo/`**: A visual demonstration using [Raylib-cs](https://github.com/ChrisDill/Raylib-cs).
-- **`tests/Clay.Tests/`**: xUnit tests covering sizing, wrapping, and interaction.
+- **`src/CSClay/`**: The core library implementation.
+- **`src/CSClay.Renderers.SkiaSharp/`**: SkiaSharp renderer implementation.
+- **`examples/CSClay.Demo/`**: A visual demonstration using [Raylib-cs](https://github.com/ChrisDill/Raylib-cs).
+- **`tests/CSClay.Tests/`**: xUnit tests covering sizing, wrapping, and interaction.
 
 ---
 

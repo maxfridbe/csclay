@@ -1,11 +1,11 @@
-using Clay;
+using CSClay;
 using Xunit;
 using Xunit.Abstractions;
 using System.Text;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace Clay.Tests;
+namespace CSClay.Tests;
 
 public class DiffTests
 {

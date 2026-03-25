@@ -1,4 +1,4 @@
-using Clay;
+using CSClay;
 using SkiaSharp;
 using CSClay.Renderers.SkiaSharp;
 using Xunit;
