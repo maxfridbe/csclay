@@ -5,7 +5,7 @@ namespace CSClay.Renderers.Raylib;
 
 public class RaylibRenderer
 {
-    public static void Render(Span<RenderCommand> commands, ClayContext context)
+    public static void Render(Span<RenderCommand> commands, ClayContext context, Font? font = null, Action<RenderCommand, Rectangle>? customRenderHandler = null)
     {
         foreach (var cmd in commands)
         {
@@ -19,13 +19,9 @@ public class RaylibRenderer
                     var radius = cmd.RenderData.Rectangle.CornerRadius;
                     
                     // Raylib-cs DrawRectangleRounded uses a single radius factor (0 to 1)
-                    // For a more complete implementation we could use custom shaders or multiple triangles,
-                    // but for the demo we'll use the average radius if any.
                     float maxRadius = Math.Max(radius.TopLeft, Math.Max(radius.TopRight, Math.Max(radius.BottomLeft, radius.BottomRight)));
                     if (maxRadius > 0)
                     {
-                        // roundness is 0 to 1, where 1 is a circle. 
-                        // We need to calculate it based on the shorter side.
                         float roundness = (maxRadius * 2.0f) / Math.Min(rect.Width, rect.Height);
                         Raylib_cs.Raylib.DrawRectangleRounded(rect, roundness, 16, rlColor);
                     }
@@ -55,8 +51,14 @@ public class RaylibRenderer
                     string lineText = fullText.Substring(textData.LineStart, textData.LineLength);
                     var tColor = new Raylib_cs.Color((byte)textData.TextColor.R, (byte)textData.TextColor.G, (byte)textData.TextColor.B, (byte)textData.TextColor.A);
                     
-                    // For a complete implementation, we'd use the fontId
-                    Raylib_cs.Raylib.DrawText(lineText, (int)rect.X, (int)rect.Y, textData.FontSize, tColor);
+                    if (font.HasValue)
+                    {
+                        Raylib_cs.Raylib.DrawTextEx(font.Value, lineText, new System.Numerics.Vector2(rect.X, rect.Y), textData.FontSize, 0, tColor);
+                    }
+                    else
+                    {
+                        Raylib_cs.Raylib.DrawText(lineText, (int)rect.X, (int)rect.Y, textData.FontSize, tColor);
+                    }
                     break;
 
                 case RenderCommandType.Image:
@@ -83,6 +85,7 @@ public class RaylibRenderer
                     break;
 
                 case RenderCommandType.Custom:
+                    customRenderHandler?.Invoke(cmd, rect);
                     break;
             }
         }

@@ -5,10 +5,10 @@ namespace CSClay.Renderers.SkiaSharp;
 
 public class SkiaSharpRenderer
 {
-    public static void Render(SKCanvas canvas, Span<RenderCommand> commands, ClayContext context)
+    public static void Render(SKCanvas canvas, Span<RenderCommand> commands, ClayContext context, SKTypeface? customTypeface = null)
     {
         using var paint = new SKPaint();
-        using var font = new SKFont(SKTypeface.Default, 12);
+        using var font = new SKFont(customTypeface ?? SKTypeface.Default, 12);
         paint.IsAntialias = true;
 
         foreach (var cmd in commands)

@@ -127,6 +127,7 @@ class Program
     static void RunMainLoop(ClayArena arena, ClayContext context, Font nerdFont)
     {
         RenderTexture2D cacheTexture = Raylib.LoadRenderTexture(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
+        RenderCommand[] cachedCommands = Array.Empty<RenderCommand>();
 
         while (!Raylib.WindowShouldClose())
         {
@@ -342,8 +343,13 @@ class Program
                 });
             }
 
-            DeclareUI();
-            var commands = UI.End();
+            if (isDirty)
+            {
+                DeclareUI();
+                cachedCommands = UI.End().ToArray();
+            }
+
+            var commands = new Span<RenderCommand>(cachedCommands);
 
             if (Raylib.IsKeyPressed(KeyboardKey.P))
             {
