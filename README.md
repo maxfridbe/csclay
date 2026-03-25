@@ -6,7 +6,9 @@
 
 **CSClay** is a high-performance, 2D UI layout library for C#, ported from the original [Clay](https://github.com/nicbarker/clay) C library. It provides microsecond layout performance and a declarative, flexbox-like model with **zero garbage collection allocations** in the core layout loop.
 
-![Website Desktop Screenshot](assets/website_desktop.png)
+<p align="center">
+  <img src="./assets/website_desktop.png" alt="CSClay Website Desktop Screenshot" width="800">
+</p>
 
 ---
 
