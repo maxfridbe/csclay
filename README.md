@@ -86,6 +86,35 @@ Span<RenderCommand> commands = UI.End();
 
 ---
 
+## ✨ Fluent API
+
+For a more concise and readable syntax with fewer `new()` calls, you can use the `CSClay.Fluent` namespace.
+
+```csharp
+using CSClay;
+using CSClay.Fluent;
+using static CSClay.Fluent.Clay;
+
+// Declare UI using the fluent builder
+UI.Begin(arena, new CSClay.Dimensions(800, 600));
+
+Clay.Container("root", c => c
+    .Sizing(Fixed(800), Grow())
+    .Padding(20, 20)
+    .Direction(LayoutDirection.TopToBottom)
+, new Color(40, 44, 52), () => 
+{
+    Clay.Text("Concise Syntax!", t => t
+        .Size(24)
+        .Color(255, 255, 255)
+    );
+});
+
+var commands = UI.End();
+```
+
+---
+
 ## 🎨 Rendering with SkiaSharp
 
 The `CSClay.Renderers.SkiaSharp` package provides a built-in renderer for generating high-quality images or real-time graphics.
