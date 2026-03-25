@@ -20,6 +20,7 @@ dotnet test CSClay.slnx -c Release
 echo "Creating NuGet packages..."
 dotnet pack src/CSClay/CSClay.csproj -c Release -o $OUTPUT_DIR
 dotnet pack src/CSClay.Renderers.SkiaSharp/CSClay.Renderers.SkiaSharp.csproj -c Release -o $OUTPUT_DIR
+dotnet pack src/CSClay.Renderers.Raylib/CSClay.Renderers.Raylib.csproj -c Release -o $OUTPUT_DIR
 
 # 3. Build Demo (Optional check)
 echo "Building demo..."

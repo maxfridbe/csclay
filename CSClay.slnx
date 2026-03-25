@@ -5,9 +5,12 @@
   <Folder Name="/src/">
     <Project Path="src/CSClay/CSClay.csproj" />
     <Project Path="src/CSClay.Renderers.SkiaSharp/CSClay.Renderers.SkiaSharp.csproj" />
+    <Project Path="src/CSClay.Renderers.Raylib/CSClay.Renderers.Raylib.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/CSClay.Tests/CSClay.Tests.csproj" />
     <Project Path="tests/CSClay.Renderers.SkiaSharp.Tests/CSClay.Renderers.SkiaSharp.Tests.csproj" />
+    <Project Path="tests/CSClay.Fluent.Tests/CSClay.Fluent.Tests.csproj" />
+    <Project Path="tests/CSClay.Renderers.Raylib.Tests/CSClay.Renderers.Raylib.Tests.csproj" />
   </Folder>
 </Solution>

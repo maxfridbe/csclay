@@ -109,34 +109,7 @@ class Program
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Raylib_cs.Color.Black);
 
-            foreach (var cmd in commands)
-            {
-                if (cmd.CommandType == RenderCommandType.Rectangle)
-                {
-                    var c = cmd.RenderData.Rectangle.Color;
-                    Raylib.DrawRectangleRec(
-                        new Raylib_cs.Rectangle(cmd.BoundingBox.X, cmd.BoundingBox.Y, cmd.BoundingBox.Width, cmd.BoundingBox.Height),
-                        new Raylib_cs.Color((byte)c.R, (byte)c.G, (byte)c.B, (byte)c.A)
-                    );
-                }
-                else if (cmd.CommandType == RenderCommandType.Text)
-                {
-                    var textData = cmd.RenderData.Text;
-                    string fullText = context.GetString(textData.TextIndex);
-                    string lineText = fullText.Substring(textData.LineStart, textData.LineLength);
-                    
-                    var c = textData.TextColor;
-                    Raylib.DrawText(lineText, (int)cmd.BoundingBox.X, (int)cmd.BoundingBox.Y, textData.FontSize, new Raylib_cs.Color((byte)c.R, (byte)c.G, (byte)c.B, (byte)c.A));
-                }
-                else if (cmd.CommandType == RenderCommandType.ScissorStart)
-                {
-                    Raylib.BeginScissorMode((int)cmd.BoundingBox.X, (int)cmd.BoundingBox.Y, (int)cmd.BoundingBox.Width, (int)cmd.BoundingBox.Height);
-                }
-                else if (cmd.CommandType == RenderCommandType.ScissorEnd)
-                {
-                    Raylib.EndScissorMode();
-                }
-            }
+            CSClay.Renderers.Raylib.RaylibRenderer.Render(commands, context);
 
             Raylib.EndDrawing();
         }

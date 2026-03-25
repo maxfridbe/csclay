@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\CSClay\CSClay.csproj" />
+    <ProjectReference Include="..\..\src\CSClay.Renderers.Raylib\CSClay.Renderers.Raylib.csproj" />
   </ItemGroup>
 
   <ItemGroup>

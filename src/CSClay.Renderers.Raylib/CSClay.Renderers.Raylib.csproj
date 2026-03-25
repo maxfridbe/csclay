@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Version>0.1.0</Version>
+    <Description>Raylib-cs renderer for the CSClay UI layout library.</Description>
+    <PackageProjectUrl>https://github.com/maxfridbe/csclay</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/maxfridbe/csclay.git</RepositoryUrl>
+    <PackageLicenseExpression>Zlib</PackageLicenseExpression>
+    <PackageTags>ui;layout;raylib;raylib-cs;renderer;csclay</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CSClay\CSClay.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Raylib-cs" Version="7.0.0" />
+  </ItemGroup>
+
+</Project>
