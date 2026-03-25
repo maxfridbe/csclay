@@ -24,6 +24,17 @@
 
 ---
 
+## ⚡ Performance
+
+**CSClay** is built from the ground up for minimal overhead. In an active UI state, it relies entirely on its pre-allocated arena and spans to generate layout commands without triggering the garbage collector.
+
+### Continuous Mode & Caching
+In environments where you want to render only when the UI changes (like typical desktop apps), you can cache the generated render commands or a texture. The included **Raylib Demo** provides a **Cached Rendering Mode** (`C` key toggle) that demonstrates this:
+- When the UI receives input (mouse move, scroll, click, or window resize), the layout is fully calculated and rendered to an off-screen texture.
+- When there is no input, CPU usage for layout drops to effectively **0 cycles**, bypassing the CSClay engine completely. Your game engine can then simply draw the cached UI texture at your target framerate (e.g., 60fps) alongside any dynamic custom elements.
+
+---
+
 ## 🧠 Philosophy
 
 Like the original Clay, **CSClay** treats UI layout as a pure calculation:
