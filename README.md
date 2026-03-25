@@ -109,13 +109,14 @@ using static CSClay.Fluent.Clay;
 // Declare UI using the fluent builder
 UI.Begin(arena, new CSClay.Dimensions(800, 600));
 
-Clay.Container("root", c => c
+Container("root", c => c
     .Sizing(Fixed(800), Grow())
     .Padding(20, 20)
     .Direction(LayoutDirection.TopToBottom)
-, new Color(40, 44, 52), () => 
+    .Color(40, 44, 52)
+, () => 
 {
-    Clay.Text("Concise Syntax!", t => t
+    Text("Concise Syntax!", t => t
         .Size(24)
         .Color(255, 255, 255)
     );
