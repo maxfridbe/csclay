@@ -83,8 +83,31 @@ public static class Clay
         public LayoutBuilder Direction(LayoutDirection direction) { Config.LayoutDirection = direction; return this; }
         public LayoutBuilder Color(float r, float g, float b, float a = 255) { BackgroundColor = new CSClay.Color(r, g, b, a); return this; }
         public LayoutBuilder Color(CSClay.Color color) { BackgroundColor = color; return this; }
-        public LayoutBuilder CornerRadius(float radius) { CornerRadiusData = new CSClay.CornerRadius { TopLeft = radius, TopRight = radius, BottomLeft = radius, BottomRight = radius }; return this; }
-        public LayoutBuilder CornerRadius(float topLeft, float topRight, float bottomLeft, float bottomRight) { CornerRadiusData = new CSClay.CornerRadius { TopLeft = topLeft, TopRight = topRight, BottomLeft = bottomLeft, BottomRight = bottomRight }; return this; }
+        
+        // CSS-like border-radius syntax
+        public LayoutBuilder CornerRadius(float radius) 
+        { 
+            CornerRadiusData = new CSClay.CornerRadius { TopLeft = radius, TopRight = radius, BottomRight = radius, BottomLeft = radius }; 
+            return this; 
+        }
+        
+        public LayoutBuilder CornerRadius(float topLeftAndBottomRight, float topRightAndBottomLeft) 
+        { 
+            CornerRadiusData = new CSClay.CornerRadius { TopLeft = topLeftAndBottomRight, TopRight = topRightAndBottomLeft, BottomRight = topLeftAndBottomRight, BottomLeft = topRightAndBottomLeft }; 
+            return this; 
+        }
+        
+        public LayoutBuilder CornerRadius(float topLeft, float topRightAndBottomLeft, float bottomRight) 
+        { 
+            CornerRadiusData = new CSClay.CornerRadius { TopLeft = topLeft, TopRight = topRightAndBottomLeft, BottomRight = bottomRight, BottomLeft = topRightAndBottomLeft }; 
+            return this; 
+        }
+
+        public LayoutBuilder CornerRadius(float topLeft, float topRight, float bottomRight, float bottomLeft) 
+        { 
+            CornerRadiusData = new CSClay.CornerRadius { TopLeft = topLeft, TopRight = topRight, BottomRight = bottomRight, BottomLeft = bottomLeft }; 
+            return this; 
+        }
         
         public LayoutBuilder Floating(Action<FloatingBuilder> floatingBuilder)
         {
