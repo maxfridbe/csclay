@@ -8,9 +8,70 @@ namespace CSClay.Demo;
 
 class Program
 {
+    class Theme
+    {
+        public Color Background;
+        public Color HeaderBg;
+        public Color TextPrimary;
+        public Color TextSecondary;
+        public Color SidebarBg;
+        public Color SidebarItemHover;
+        public Color SidebarItemIdle;
+        public Color ContentBg;
+        public Color ButtonHover;
+        public Color ButtonIdle;
+        public Color ModalBg;
+        public Color ModalHeaderBg;
+        public Color ScrollPaneBg;
+        public Color ScrollItemHover;
+        public Color ScrollItemIdle;
+        public Raylib_cs.Color RaylibBackground;
+    }
+
+    static readonly Theme DarkTheme = new Theme
+    {
+        Background = new Color(40, 44, 52),
+        HeaderBg = new Color(60, 64, 72),
+        TextPrimary = new Color(255, 255, 255),
+        TextSecondary = new Color(200, 200, 200),
+        SidebarBg = new Color(50, 54, 62),
+        SidebarItemHover = new Color(100, 150, 255),
+        SidebarItemIdle = new Color(70, 74, 82),
+        ContentBg = new Color(30, 34, 42),
+        ButtonHover = new Color(80, 180, 100),
+        ButtonIdle = new Color(40, 140, 60),
+        ModalBg = new Color(45, 49, 57, 240),
+        ModalHeaderBg = new Color(70, 74, 82),
+        ScrollPaneBg = new Color(25, 29, 36),
+        ScrollItemHover = new Color(70, 100, 150),
+        ScrollItemIdle = new Color(45, 49, 57),
+        RaylibBackground = Raylib_cs.Color.Black
+    };
+
+    static readonly Theme LightTheme = new Theme
+    {
+        Background = new Color(240, 240, 245),
+        HeaderBg = new Color(220, 220, 230),
+        TextPrimary = new Color(20, 20, 20),
+        TextSecondary = new Color(80, 80, 80),
+        SidebarBg = new Color(230, 230, 240),
+        SidebarItemHover = new Color(150, 180, 255),
+        SidebarItemIdle = new Color(210, 210, 220),
+        ContentBg = new Color(250, 250, 255),
+        ButtonHover = new Color(100, 200, 120),
+        ButtonIdle = new Color(60, 160, 80),
+        ModalBg = new Color(235, 235, 245, 240),
+        ModalHeaderBg = new Color(210, 210, 220),
+        ScrollPaneBg = new Color(255, 255, 255),
+        ScrollItemHover = new Color(200, 220, 255),
+        ScrollItemIdle = new Color(240, 240, 250),
+        RaylibBackground = Raylib_cs.Color.RayWhite
+    };
+
     static bool showModal = false;
     static float globalScale = 1.0f;
     static float scrollY = 0f;
+    static bool isDarkTheme = true;
 
     static void Main()
     {
@@ -63,14 +124,18 @@ class Program
     {
         while (!Raylib.WindowShouldClose())
         {
-            // 0. Handle Scale Input
+            // 0. Handle Input (Scale and Theme)
             if (Raylib.IsKeyDown(KeyboardKey.LeftControl) || Raylib.IsKeyDown(KeyboardKey.RightControl))
             {
                 if (Raylib.IsKeyPressed(KeyboardKey.Equal)) globalScale += 0.1f;
                 if (Raylib.IsKeyPressed(KeyboardKey.Minus)) globalScale = Math.Max(0.5f, globalScale - 0.1f);
             }
 
-            // 1. Update Interaction State
+            if (Raylib.IsKeyPressed(KeyboardKey.T)) isDarkTheme = !isDarkTheme;
+
+            Theme theme = isDarkTheme ? DarkTheme : LightTheme;
+
+            // Handle scrolling
             var mousePos = Raylib.GetMousePosition();
             UI.SetPointerState(new CSClay.Vector2(mousePos.X, mousePos.Y), Raylib.IsMouseButtonDown(MouseButton.Left));
 
@@ -82,16 +147,16 @@ class Program
                 .ChildGap((ushort)(10 * globalScale))
                 .Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale))
                 .Sizing(Fixed(Raylib.GetScreenWidth()), Fixed(Raylib.GetScreenHeight()))
-                .Color(40, 44, 52)
+                .Color(theme.Background)
             , () => 
             {
                 Container("header", c => c
                     .Sizing(Grow(), Fixed(60 * globalScale))
                     .Align(LayoutAlignmentX.Center, LayoutAlignmentY.Center)
-                    .Color(60, 64, 72)
+                    .Color(theme.HeaderBg)
                 , () => 
                 {
-                    Text("󰀘 CSCLAY PORT", t => t.Size((ushort)(32 * globalScale)).Color(255, 255, 255));
+                    Text("󰀘 CSCLAY PORT", t => t.Size((ushort)(32 * globalScale)).Color(theme.TextPrimary));
                 });
 
                 Container("body", c => c
@@ -106,13 +171,13 @@ class Program
                         .Sizing(Fixed(200 * globalScale), Grow())
                         .Padding((ushort)(10 * globalScale), (ushort)(10 * globalScale))
                         .ChildGap((ushort)(10 * globalScale))
-                        .Color(50, 54, 62)
+                        .Color(theme.SidebarBg)
                     , () => 
                     {
                         for (int i = 1; i <= 5; i++)
                         {
                             string itemId = $"sidebar-item-{i}";
-                            var color = UI.IsHovered(itemId) ? new Color(100, 150, 255) : new Color(70, 74, 82);
+                            var color = UI.IsHovered(itemId) ? theme.SidebarItemHover : theme.SidebarItemIdle;
                             Container(itemId, c => c
                                 .Sizing(Grow(), Fixed(40 * globalScale))
                                 .Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center)
@@ -120,7 +185,7 @@ class Program
                                 .Color(color)
                             , () => 
                             {
-                                Text($"󰉋 Menu Item {i}", t => t.Size((ushort)(18 * globalScale)).Color(255, 255, 255));
+                                Text($"󰉋 Menu Item {i}", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextPrimary));
                             });
                         }
                     });
@@ -131,23 +196,23 @@ class Program
                         .Sizing(Grow(), Grow())
                         .Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale))
                         .ChildGap((ushort)(20 * globalScale))
-                        .Color(30, 34, 42)
+                        .Color(theme.ContentBg)
                     , () => 
                     {
-                        Text("Welcome to the Clay C# Port!", t => t.Size((ushort)(24 * globalScale)).Color(255, 255, 255));
+                        Text("Welcome to the Clay C# Port!", t => t.Size((ushort)(24 * globalScale)).Color(theme.TextPrimary));
                         
                         Text("This is a high-performance, zero-allocation UI layout library ported from C. Use Ctrl + and Ctrl - to scale the UI!", 
-                            t => t.Size((ushort)(18 * globalScale)).Color(200, 200, 200).Wrap(TextWrapMode.Words));
+                            t => t.Size((ushort)(18 * globalScale)).Color(theme.TextSecondary).Wrap(TextWrapMode.Words));
 
                         // Modal Trigger Button
                         string modalBtnId = "modal-trigger";
-                        var btnColor = UI.IsHovered(modalBtnId) ? new Color(80, 180, 100) : new Color(40, 140, 60);
+                        var btnColor = UI.IsHovered(modalBtnId) ? theme.ButtonHover : theme.ButtonIdle;
                         Container(modalBtnId, c => c
                             .Padding((ushort)(20 * globalScale), (ushort)(10 * globalScale))
                             .Color(btnColor)
                         , () => 
                         {
-                            Text("󰒓 Open Settings", t => t.Size((ushort)(18 * globalScale)).Color(255, 255, 255));
+                            Text("󰒓 Open Settings", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextPrimary));
                             
                             if (Raylib.IsMouseButtonPressed(MouseButton.Left) && UI.Hovered())
                             {
@@ -161,7 +226,7 @@ class Program
                                     c => c
                                         .Sizing(Fixed(300 * globalScale), Fit())
                                         .Direction(LayoutDirection.TopToBottom)
-                                        .Color(45, 49, 57, 240) // Slightly transparent
+                                        .Color(theme.ModalBg)
                                         .Floating(f => f.Attach(FloatingAttachPoint.LeftTop, FloatingAttachPoint.LeftBottom, FloatingAttachToElement.Parent).ZIndex(1000).Offset(0, 5)),
                                     () => 
                                     {
@@ -169,23 +234,23 @@ class Program
                                             .Sizing(Grow(), Fixed(50 * globalScale))
                                             .Padding((ushort)(15 * globalScale), 0)
                                             .Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center)
-                                            .Color(70, 74, 82)
+                                            .Color(theme.ModalHeaderBg)
                                         , () => 
                                         {
-                                            Text("󰒓 Settings Modal", t => t.Size((ushort)(20 * globalScale)).Color(255, 255, 255));
+                                            Text("󰒓 Settings Modal", t => t.Size((ushort)(20 * globalScale)).Color(theme.TextPrimary));
                                             
                                             // Close button
                                             Container("close-btn", c => c.Align(LayoutAlignmentX.Right, LayoutAlignmentY.Center).Sizing(Grow(), Fit()), () => {
-                                                Text("󰅖 ", t => t.Size((ushort)(24 * globalScale)).Color(255, 100, 100));
+                                                Text("󰅖 ", t => t.Size((ushort)(24 * globalScale)).Color(new Color(255, 100, 100)));
                                                 if (Raylib.IsMouseButtonPressed(MouseButton.Left) && UI.Hovered()) showModal = false;
                                             });
                                         });
 
                                         Container("modal-body", c => c.Direction(LayoutDirection.TopToBottom).Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale)).ChildGap((ushort)(15 * globalScale)), () => 
                                         {
-                                            Text("󰄬 Setting 1: Enabled", t => t.Size((ushort)(18 * globalScale)).Color(200, 200, 200));
-                                            Text("󰄬 Setting 2: Performance Mode", t => t.Size((ushort)(18 * globalScale)).Color(200, 200, 200));
-                                            Text("󰄱 Setting 3: Beta Features", t => t.Size((ushort)(18 * globalScale)).Color(150, 150, 150));
+                                            Text("󰄬 Setting 1: Enabled", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextSecondary));
+                                            Text("󰄬 Setting 2: Performance Mode", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextSecondary));
+                                            Text("󰄱 Setting 3: Beta Features", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextSecondary));
                                         });
                                     }
                                 );
@@ -198,7 +263,7 @@ class Program
                                 .Sizing(Grow(), Grow())
                                 .Direction(LayoutDirection.TopToBottom)
                                 .ChildGap((ushort)(10 * globalScale))
-                                .Color(25, 29, 36)
+                                .Color(theme.ScrollPaneBg)
                                 .Scroll(cl => cl.Vertical().Offset(0, scrollY)),
                             () => 
                         {
@@ -216,7 +281,7 @@ class Program
                             for (int i = 1; i <= 100; i++)
                             {
                                 string scrollItemId = $"scroll-item-{i}";
-                                var itemColor = UI.IsHovered(scrollItemId) ? new Color(70, 100, 150) : new Color(45, 49, 57);
+                                var itemColor = UI.IsHovered(scrollItemId) ? theme.ScrollItemHover : theme.ScrollItemIdle;
                                 
                                 Container(scrollItemId, c => c
                                     .Sizing(Grow(), Fixed(50 * globalScale))
@@ -225,7 +290,7 @@ class Program
                                     .Color(itemColor)
                                 , () => 
                                 {
-                                    Text($"󰋚 Scrollable Item {i}", t => t.Size((ushort)(18 * globalScale)).Color(220, 220, 220));
+                                    Text($"󰋚 Scrollable Item {i}", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextPrimary));
                                 });
                             }
                         });
@@ -237,7 +302,7 @@ class Program
 
             // 3. Render
             Raylib.BeginDrawing();
-            Raylib.ClearBackground(Raylib_cs.Color.Black);
+            Raylib.ClearBackground(theme.RaylibBackground);
 
             CSClay.Renderers.Raylib.RaylibRenderer.Render(commands, context, nerdFont);
 
