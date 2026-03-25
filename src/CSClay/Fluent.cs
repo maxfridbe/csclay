@@ -86,6 +86,27 @@ public static class Clay
         public TextBuilder Wrap(TextWrapMode mode) { Config.WrapMode = mode; return this; }
     }
 
+    public class FloatingBuilder
+    {
+        public FloatingConfig Config = new();
+        public FloatingBuilder Offset(float x, float y) { Config.Offset = new Vector2(x, y); return this; }
+        public FloatingBuilder ZIndex(int z) { Config.ZIndex = z; return this; }
+        public FloatingBuilder Attach(FloatingAttachPoint element, FloatingAttachPoint parent, FloatingAttachToElement to = FloatingAttachToElement.Parent) 
+        { 
+            Config.AttachPoints = new FloatingAttachPoints { Element = element, Parent = parent }; 
+            Config.AttachTo = to;
+            return this; 
+        }
+    }
+
+    public class ClipBuilder
+    {
+        public ClipConfig Config = new();
+        public ClipBuilder Horizontal(bool clip = true) { Config.Horizontal = clip; return this; }
+        public ClipBuilder Vertical(bool clip = true) { Config.Vertical = clip; return this; }
+        public ClipBuilder Offset(float x, float y) { Config.ChildOffset = new Vector2(x, y); return this; }
+    }
+
     public static void Container(string id, Action<LayoutBuilder> configBuilder, Action? children = null)
     {
         var builder = new LayoutBuilder();
@@ -98,6 +119,34 @@ public static class Clay
         var builder = new LayoutBuilder();
         configBuilder(builder);
         UI.Container(id, builder.Config, backgroundColor, children);
+    }
+
+    public static void FloatingContainer(string id, Action<LayoutBuilder> layoutBuilder, Action<FloatingBuilder> floatingBuilder, Action? children = null)
+    {
+        var l = new LayoutBuilder(); layoutBuilder(l);
+        var f = new FloatingBuilder(); floatingBuilder(f);
+        UI.FloatingContainer(id, l.Config, f.Config, children);
+    }
+
+    public static void FloatingContainer(string id, Action<LayoutBuilder> layoutBuilder, Action<FloatingBuilder> floatingBuilder, Color backgroundColor, Action? children = null)
+    {
+        var l = new LayoutBuilder(); layoutBuilder(l);
+        var f = new FloatingBuilder(); floatingBuilder(f);
+        UI.FloatingContainer(id, l.Config, f.Config, backgroundColor, children);
+    }
+
+    public static void ScrollContainer(string id, Action<LayoutBuilder> layoutBuilder, Action<ClipBuilder> clipBuilder, Action? children = null)
+    {
+        var l = new LayoutBuilder(); layoutBuilder(l);
+        var c = new ClipBuilder(); clipBuilder(c);
+        UI.ScrollContainer(id, l.Config, c.Config, children);
+    }
+
+    public static void ScrollContainer(string id, Action<LayoutBuilder> layoutBuilder, Action<ClipBuilder> clipBuilder, Color backgroundColor, Action? children = null)
+    {
+        var l = new LayoutBuilder(); layoutBuilder(l);
+        var c = new ClipBuilder(); clipBuilder(c);
+        UI.ScrollContainer(id, l.Config, c.Config, backgroundColor, children);
     }
 
     public static void Text(string text, Action<TextBuilder> configBuilder)
