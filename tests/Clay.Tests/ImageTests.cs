@@ -22,15 +22,14 @@ public class ImageTests
 
         var commands = UI.End();
 
-        // 0: RootContainer
-        // 1: "root"
-        // 2: "logo" (Image)
-        Assert.Equal(3, commands.Length);
-        Assert.Equal(RenderCommandType.Image, commands[2].CommandType);
-        Assert.Equal(100, commands[2].BoundingBox.Width);
-        Assert.Equal(50, commands[2].BoundingBox.Height);
+        // 0: "root"
+        // 1: "logo" (Image)
+        Assert.Equal(2, commands.Length);
+        Assert.Equal(RenderCommandType.Image, commands[1].CommandType);
+        Assert.Equal(100, commands[1].BoundingBox.Width);
+        Assert.Equal(50, commands[1].BoundingBox.Height);
 
         // Root container height should be 50 (Fit)
-        Assert.Equal(50, commands[1].BoundingBox.Height);
+        Assert.Equal(50, commands[0].BoundingBox.Height);
     }
 }

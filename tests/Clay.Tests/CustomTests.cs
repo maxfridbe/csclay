@@ -15,9 +15,8 @@ public class CustomTests
 
         var commands = UI.End();
 
-        // 0: RootContainer
-        // 1: "my-widget" (Custom)
-        Assert.Equal(2, commands.Length);
-        Assert.Equal(RenderCommandType.Custom, commands[1].CommandType);
+        // 0: "my-widget" (Custom)
+        Assert.Equal(1, commands.Length);
+        Assert.Equal(RenderCommandType.Custom, commands[0].CommandType);
     }
 }

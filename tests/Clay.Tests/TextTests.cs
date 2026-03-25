@@ -27,15 +27,14 @@ public class TextTests
 
         var commands = UI.End();
 
-        // Investigating why Actual is 3
-        Assert.Equal(3, commands.Length);
-        Assert.Equal(RenderCommandType.Rectangle, commands[0].CommandType); // RootContainer
-        // What is commands[1]?
-        // What is commands[2]?
+        // 0: "root" (Rectangle)
+        // 1: "Hello World" (Text)
+        Assert.Equal(2, commands.Length);
+        Assert.Equal(RenderCommandType.Rectangle, commands[0].CommandType);
+        Assert.Equal(RenderCommandType.Text, commands[1].CommandType);
 
-        // Assuming commands[2] is the text if commands.Length is 3
-        Assert.Equal(110, commands[2].BoundingBox.Width);
-        Assert.Equal(20, commands[2].BoundingBox.Height);
+        Assert.Equal(110, commands[1].BoundingBox.Width);
+        Assert.Equal(20, commands[1].BoundingBox.Height);
     }
 
     [Fact]
@@ -58,14 +57,13 @@ public class TextTests
 
         var commands = UI.End();
 
-        // 0: RootContainer
-        // 1: "root" (Rectangle)
-        // 2: "Hello " (Line 1)
-        // 3: "World" (Line 2)
+        // 0: "root" (Rectangle)
+        // 1: "Hello " (Line 1)
+        // 2: "World" (Line 2)
         
-        Assert.Equal(4, commands.Length);
-        Assert.Equal(40, commands[1].BoundingBox.Height); // "root" grew to 40
-        Assert.Equal(20, commands[2].BoundingBox.Height); // Line 1
-        Assert.Equal(20, commands[3].BoundingBox.Height); // Line 2
+        Assert.Equal(3, commands.Length);
+        Assert.Equal(40, commands[0].BoundingBox.Height); // "root" grew to 40
+        Assert.Equal(20, commands[1].BoundingBox.Height); // Line 1
+        Assert.Equal(20, commands[2].BoundingBox.Height); // Line 2
     }
 }

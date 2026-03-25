@@ -165,6 +165,7 @@ public enum RenderCommandType : byte
 {
     None,
     Rectangle,
+    Border,
     Text,
     Image,
     ScissorStart,

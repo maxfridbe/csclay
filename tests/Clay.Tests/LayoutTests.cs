@@ -28,18 +28,17 @@ public class LayoutTests
         });
         var commands = UI.End();
 
-        // 0: RootContainer (added by BeginLayout)
-        // 1: "root"
-        // 2: "child1"
-        // 3: "child2"
-        Assert.Equal(4, commands.Length);
+        // 0: "root"
+        // 1: "child1"
+        // 2: "child2"
+        Assert.Equal(3, commands.Length);
 
         // Child 1 should be at (0, 0) with width 200
-        Assert.Equal(0, commands[2].BoundingBox.X);
-        Assert.Equal(200, commands[2].BoundingBox.Width);
+        Assert.Equal(0, commands[1].BoundingBox.X);
+        Assert.Equal(200, commands[1].BoundingBox.Width);
 
         // Child 2 should be at (200, 0) and grow to fill the rest (800 - 200 = 600)
-        Assert.Equal(200, commands[3].BoundingBox.X);
-        Assert.Equal(600, commands[3].BoundingBox.Width);
+        Assert.Equal(200, commands[2].BoundingBox.X);
+        Assert.Equal(600, commands[2].BoundingBox.Width);
     }
 }

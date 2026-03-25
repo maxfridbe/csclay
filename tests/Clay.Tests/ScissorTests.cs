@@ -25,20 +25,19 @@ public class ScissorTests
 
         var commands = UI.End();
 
-        // 0: RootContainer
-        // 1: ScissorStart ("scroll")
-        // 2: "scroll" (Rectangle)
-        // 3: "content" (Rectangle)
-        // 4: ScissorEnd ("scroll")
+        // 0: ScissorStart ("scroll")
+        // 1: "scroll" (Rectangle)
+        // 2: "content" (Rectangle)
+        // 3: ScissorEnd ("scroll")
         
-        Assert.Equal(5, commands.Length);
-        Assert.Equal(RenderCommandType.ScissorStart, commands[1].CommandType);
+        Assert.Equal(4, commands.Length);
+        Assert.Equal(RenderCommandType.ScissorStart, commands[0].CommandType);
+        Assert.Equal(RenderCommandType.Rectangle, commands[1].CommandType);
         Assert.Equal(RenderCommandType.Rectangle, commands[2].CommandType);
-        Assert.Equal(RenderCommandType.Rectangle, commands[3].CommandType);
-        Assert.Equal(RenderCommandType.ScissorEnd, commands[4].CommandType);
+        Assert.Equal(RenderCommandType.ScissorEnd, commands[3].CommandType);
 
         // "content" should be offset by scroll offset (0, -20)
         // Since "scroll" is at (0, 0), "content" is at (0, -20)
-        Assert.Equal(-20, commands[3].BoundingBox.Y);
+        Assert.Equal(-20, commands[2].BoundingBox.Y);
     }
 }

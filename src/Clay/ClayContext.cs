@@ -189,19 +189,6 @@ _customConfigsCapacity = 1024;
 _customConfigsOffset = _arena.Allocate<CustomConfig>(1024);
 _customConfigsCount = 0;
 
-OpenElement("Clay__RootContainer", ElementType.None);
-
-ConfigureOpenElement(new LayoutConfig 
-{ 
-    Sizing = new Sizing 
-    { 
-        Width = SizingAxis.Fixed(windowSize.Width), 
-        Height = SizingAxis.Fixed(windowSize.Height) 
-    } 
-});
-ConfigureRectangleElement(new RectangleConfig { Color = new Color(0, 0, 0, 0) });
-
-var roots = GetLayoutElementTreeRoots();        roots[_layoutElementTreeRootsCount++] = new LayoutElementTreeRoot { LayoutElementIndex = 0 };
     }
 
     private Span<LayoutElement> GetLayoutElements() => _arena.GetSpan<LayoutElement>(_layoutElementsOffset, _layoutElementsCapacity);
@@ -239,6 +226,11 @@ var roots = GetLayoutElementTreeRoots();        roots[_layoutElementTreeRootsCou
             children[_layoutElementChildrenCount++] = index;
             ref var parent = ref elements[parentIndex];
             parent.ChildrenCount++;
+        }
+        else
+        {
+            var roots = GetLayoutElementTreeRoots();
+            roots[_layoutElementTreeRootsCount++] = new LayoutElementTreeRoot { LayoutElementIndex = index };
         }
 
         elements[index] = new LayoutElement 
@@ -303,12 +295,27 @@ var roots = GetLayoutElementTreeRoots();        roots[_layoutElementTreeRootsCou
                 _ => 0
             };
 
-            roots[_layoutElementTreeRootsCount++] = new LayoutElementTreeRoot
+            bool alreadyRoot = false;
+            for (int i = 0; i < _layoutElementTreeRootsCount; i++)
             {
-                LayoutElementIndex = index,
-                ParentId = actualParentId,
-                ZIndex = config.ZIndex
-            };
+                if (roots[i].LayoutElementIndex == index)
+                {
+                    roots[i].ZIndex = config.ZIndex;
+                    roots[i].ParentId = actualParentId;
+                    alreadyRoot = true;
+                    break;
+                }
+            }
+            
+            if (!alreadyRoot)
+            {
+                roots[_layoutElementTreeRootsCount++] = new LayoutElementTreeRoot
+                {
+                    LayoutElementIndex = index,
+                    ParentId = actualParentId,
+                    ZIndex = config.ZIndex
+                };
+            }
         }
     }
 

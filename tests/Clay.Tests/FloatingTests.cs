@@ -39,15 +39,14 @@ public class FloatingTests
 
         var commands = UI.End();
 
-        // 0: RootContainer
-        // 1: "root"
-        // 2: "parent"
-        // 3: "tooltip" (floating)
-        Assert.Equal(4, commands.Length);
+        // 0: "root"
+        // 1: "parent"
+        // 2: "tooltip" (floating)
+        Assert.Equal(3, commands.Length);
 
         // "parent" should be at (10, 10) - because of root padding
-        Assert.Equal(10, commands[2].BoundingBox.X);
-        Assert.Equal(10, commands[2].BoundingBox.Y);
+        Assert.Equal(10, commands[1].BoundingBox.X);
+        Assert.Equal(10, commands[1].BoundingBox.Y);
 
         // "tooltip" attaches its LeftCenter to parent's RightCenter
         // parent RightCenter = (10 + 100, 10 + 50) = (110, 60)
@@ -55,8 +54,8 @@ public class FloatingTests
         // target BB.X = 110 + 5 (offset) = 115
         // target BB.Y = 60 - 10 = 50
         
-        Assert.Equal(115, commands[3].BoundingBox.X);
-        Assert.Equal(50, commands[3].BoundingBox.Y);
+        Assert.Equal(115, commands[2].BoundingBox.X);
+        Assert.Equal(50, commands[2].BoundingBox.Y);
     }
 
     [Fact]
@@ -71,16 +70,14 @@ public class FloatingTests
 
         var commands = UI.End();
 
-        // 0: RootContainer (Z=0)
-        // 1: "low" (Z=10)
-        // 2: "medium" (Z=50)
-        // 3: "high" (Z=100)
+        // 0: "low" (Z=10)
+        // 1: "medium" (Z=50)
+        // 2: "high" (Z=100)
         
-        Assert.Equal(4, commands.Length);
-        Assert.Equal(0, commands[0].ZIndex);
-        Assert.Equal(10, commands[1].ZIndex);
-        Assert.Equal(50, commands[2].ZIndex);
-        Assert.Equal(100, commands[3].ZIndex);
+        Assert.Equal(3, commands.Length);
+        Assert.Equal(10, commands[0].ZIndex);
+        Assert.Equal(50, commands[1].ZIndex);
+        Assert.Equal(100, commands[2].ZIndex);
     }
 
     private string GetIdString(uint id, ClayArena arena)
