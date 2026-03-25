@@ -165,4 +165,22 @@ public static class Clay
         configBuilder(builder);
         UI.Text(text, builder.Config);
     }
+
+    public static void Custom(string id, Action<LayoutBuilder> configBuilder, uint customDataId = 0)
+    {
+        var builder = new LayoutBuilder();
+        configBuilder(builder);
+
+        var context = UI.GetCurrentContext();
+        context.OpenElement(id, ElementType.Custom);
+        context.ConfigureOpenElement(builder.Config);
+        context.ConfigureCustomElement(new CustomConfig { CustomDataId = customDataId });
+
+        if (builder.BackgroundColor.HasValue)
+        {
+            context.ConfigureRectangleElement(new RectangleConfig { Color = builder.BackgroundColor.Value });
+        }
+
+        context.CloseElement();
+    }
 }
