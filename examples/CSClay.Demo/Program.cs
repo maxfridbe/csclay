@@ -96,6 +96,7 @@ class Program
                 {
                     // Sidebar
                     Container("sidebar", c => c
+                        .Direction(LayoutDirection.TopToBottom)
                         .Sizing(Fixed(200 * globalScale), Grow())
                         .Padding((ushort)(10 * globalScale), (ushort)(10 * globalScale))
                         .ChildGap((ushort)(10 * globalScale))
@@ -117,6 +118,7 @@ class Program
 
                     // Content
                     Container("content", c => c
+                        .Direction(LayoutDirection.TopToBottom)
                         .Sizing(Grow(), Grow())
                         .Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale))
                         .ChildGap((ushort)(20 * globalScale))
@@ -159,7 +161,7 @@ class Program
                                         });
                                     });
 
-                                    Container("modal-body", c => c.Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale)).ChildGap((ushort)(15 * globalScale)), () => 
+                                    Container("modal-body", c => c.Direction(LayoutDirection.TopToBottom).Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale)).ChildGap((ushort)(15 * globalScale)), () => 
                                     {
                                         Text("󰄬 Setting 1: Enabled", t => t.Size((ushort)(18 * globalScale)).Color(200, 200, 200));
                                         Text("󰄬 Setting 2: Performance Mode", t => t.Size((ushort)(18 * globalScale)).Color(200, 200, 200));
