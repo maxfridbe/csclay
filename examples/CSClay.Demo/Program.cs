@@ -150,7 +150,7 @@ class Program
                             {
                                 // Render a popup menu attached to the button
                                 FloatingContainer("modal", 
-                                    l => l.Sizing(Fixed(300 * globalScale), Fit()),
+                                    l => l.Sizing(Fixed(300 * globalScale), Fit()).Direction(LayoutDirection.TopToBottom),
                                     f => f.Attach(FloatingAttachPoint.LeftTop, FloatingAttachPoint.LeftBottom, FloatingAttachToElement.Parent).ZIndex(1000).Offset(0, 5),
                                     new Color(45, 49, 57, 240), // Slightly transparent
                                     () => 
