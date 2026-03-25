@@ -74,6 +74,8 @@ class Program
     static bool isDarkTheme = true;
     static bool isSpinning = true;
     static float rotationAngle = 0f;
+    static bool isCachedMode = false;
+    static bool isDirty = true;
 
     static void Main()
     {
@@ -124,23 +126,42 @@ class Program
 
     static void RunMainLoop(ClayArena arena, ClayContext context, Font nerdFont)
     {
+        RenderTexture2D cacheTexture = Raylib.LoadRenderTexture(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
+
         while (!Raylib.WindowShouldClose())
         {
+            bool inputChanged = false;
+
+            if (Raylib.IsWindowResized())
+            {
+                Raylib.UnloadRenderTexture(cacheTexture);
+                cacheTexture = Raylib.LoadRenderTexture(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
+                inputChanged = true;
+            }
+
+            var mouseDelta = Raylib.GetMouseDelta();
+            if (mouseDelta.X != 0 || mouseDelta.Y != 0) inputChanged = true;
+            if (Raylib.GetMouseWheelMove() != 0) inputChanged = true;
+            if (Raylib.IsMouseButtonPressed(MouseButton.Left) || Raylib.IsMouseButtonReleased(MouseButton.Left)) inputChanged = true;
+
             // 0. Handle Input (Scale and Theme)
             if (Raylib.IsKeyDown(KeyboardKey.LeftControl) || Raylib.IsKeyDown(KeyboardKey.RightControl))
             {
-                if (Raylib.IsKeyPressed(KeyboardKey.Equal)) globalScale += 0.1f;
-                if (Raylib.IsKeyPressed(KeyboardKey.Minus)) globalScale = Math.Max(0.5f, globalScale - 0.1f);
+                if (Raylib.IsKeyPressed(KeyboardKey.Equal)) { globalScale += 0.1f; inputChanged = true; }
+                if (Raylib.IsKeyPressed(KeyboardKey.Minus)) { globalScale = Math.Max(0.5f, globalScale - 0.1f); inputChanged = true; }
             }
 
-            if (Raylib.IsKeyPressed(KeyboardKey.T)) isDarkTheme = !isDarkTheme;
+            if (Raylib.IsKeyPressed(KeyboardKey.T)) { isDarkTheme = !isDarkTheme; inputChanged = true; }
             if (Raylib.IsKeyPressed(KeyboardKey.S)) isSpinning = !isSpinning;
+            if (Raylib.IsKeyPressed(KeyboardKey.C)) { isCachedMode = !isCachedMode; inputChanged = true; }
 
             if (isSpinning)
             {
                 rotationAngle += 1.0f;
                 if (rotationAngle >= 360f) rotationAngle -= 360f;
             }
+
+            if (inputChanged || !isCachedMode) isDirty = true;
 
             Theme theme = isDarkTheme ? DarkTheme : LightTheme;
 
@@ -361,98 +382,96 @@ class Program
                 context.TextMeasure = oldMeasure;
             }
 
-            // 3. Render
+                        // 3. Render
+            if (isDirty)
+            {
+                Raylib.BeginTextureMode(cacheTexture);
+                Raylib.ClearBackground(theme.RaylibBackground);
+
+                CSClay.Renderers.Raylib.RaylibRenderer.Render(commands, context, nerdFont, (cmd, rect) => 
+                {
+                    if (cmd.RenderData.Custom.CustomDataId == 1) // Our Cube ID
+                    {
+                        // Draw background for cube in cache
+                        Raylib.BeginScissorMode((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
+                        Raylib.DrawRectangleRec(rect, new Raylib_cs.Color(50, 50, 50, 255));
+                        Raylib.EndScissorMode();
+                    }
+                });
+
+                Raylib.EndTextureMode();
+                isDirty = false;
+            }
+
             Raylib.BeginDrawing();
             Raylib.ClearBackground(theme.RaylibBackground);
 
-            CSClay.Renderers.Raylib.RaylibRenderer.Render(commands, context, nerdFont, (cmd, rect) => 
+            // Draw the cached UI
+            Raylib.DrawTextureRec(cacheTexture.Texture, new Rectangle(0, 0, cacheTexture.Texture.Width, -cacheTexture.Texture.Height), new System.Numerics.Vector2(0, 0), Raylib_cs.Color.White);
+
+            // Draw dynamic elements on top
+            foreach (var cmd in commands)
             {
-                if (cmd.RenderData.Custom.CustomDataId == 1) // Our Cube ID
+                if (cmd.CommandType == RenderCommandType.Custom && cmd.RenderData.Custom.CustomDataId == 1)
                 {
-                    // Draw a 3D cube inside the 2D rectangle using Raylib's 3D mode
-                    Camera3D camera = new Camera3D();
-                    camera.Position = new System.Numerics.Vector3(0.0f, 10.0f, 10.0f);
-                    camera.Target = new System.Numerics.Vector3(0.0f, 0.0f, 0.0f);
-                    camera.Up = new System.Numerics.Vector3(0.0f, 1.0f, 0.0f);
-                    camera.FovY = 45.0f;
-                    camera.Projection = CameraProjection.Perspective;
-
-                    // Scissor to keep the 3D rendering inside the UI bounds
-                    Raylib.BeginScissorMode((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
-                    
-                    // We also need to clear the background of this specific area if needed, 
-                    // or just draw the cube. Let's draw a small background for it.
-                    Raylib.DrawRectangleRec(rect, new Raylib_cs.Color(50, 50, 50, 255));
-
-                    // Use a render texture or adjust viewport? Raylib doesn't have a simple push viewport for 3D,
-                    // but we can translate the drawing position based on camera math, 
-                    // or use a RenderTexture2D. Using a RenderTexture2D is much easier for embedding 3D in 2D.
-                    // For simplicity, we'll just use BeginMode3D with scissor, but the camera might not perfectly align to the rect.
-                    // A quick hack is to just draw a 2D rotating rectangle that *looks* like a spinning cube using lines,
-                    // or just accept the camera renders to the whole screen but clipped.
-                    
-                    Raylib.BeginMode3D(camera);
-                    
-                    // The camera is at 0,10,10 looking at 0,0,0.
-                    // Raylib.DrawCube uses global world coordinates. 
-                    // Since it's scissored, it will only show up inside the 'rect' if the 'rect' happens to be over the center of the screen?
-                    // Ah, right. BeginMode3D affects the whole screen. It's better to draw a 2D spinning shape, or use a RenderTexture.
-                    // To keep it simple without managing render textures, I'll draw a 2D spinning wireframe cube using math!
-                    Raylib.EndMode3D();
-
-                    // 2D Spinning Cube (Wireframe)
-                    float cx = rect.X + rect.Width / 2;
-                    float cy = rect.Y + rect.Height / 2;
-                    float size = Math.Min(rect.Width, rect.Height) * 0.4f;
-                    
-                    // Simple rotation math
-                    float rad = rotationAngle * (float)Math.PI / 180f;
-                    float cos = (float)Math.Cos(rad);
-                    float sin = (float)Math.Sin(rad);
-
-                    // 8 vertices of a cube
-                    System.Numerics.Vector3[] vertices = new System.Numerics.Vector3[]
-                    {
-                        new (-1, -1, -1), new (1, -1, -1), new (1, 1, -1), new (-1, 1, -1),
-                        new (-1, -1, 1), new (1, -1, 1), new (1, 1, 1), new (-1, 1, 1)
-                    };
-
-                    System.Numerics.Vector2[] proj = new System.Numerics.Vector2[8];
-                    for (int j = 0; j < 8; j++)
-                    {
-                        float x = vertices[j].X;
-                        float y = vertices[j].Y;
-                        float z = vertices[j].Z;
-
-                        // Rotate Y
-                        float x1 = x * cos - z * sin;
-                        float z1 = z * cos + x * sin;
-                        
-                        // Rotate X
-                        float y2 = y * cos - z1 * sin;
-                        float z2 = z1 * cos + y * sin;
-
-                        // Orthographic projection
-                        proj[j] = new System.Numerics.Vector2(cx + x1 * size, cy + y2 * size);
-                    }
-
-                    // Edges
-                    int[,] edges = new int[,] {
-                        {0,1}, {1,2}, {2,3}, {3,0},
-                        {4,5}, {5,6}, {6,7}, {7,4},
-                        {0,4}, {1,5}, {2,6}, {3,7}
-                    };
-
-                    for (int j = 0; j < 12; j++)
-                    {
-                        Raylib.DrawLineEx(proj[edges[j,0]], proj[edges[j,1]], 2f, Raylib_cs.Color.Lime);
-                    }
-
-                    Raylib.EndScissorMode();
+                    var rect = new Rectangle(cmd.BoundingBox.X, cmd.BoundingBox.Y, cmd.BoundingBox.Width, cmd.BoundingBox.Height);
+                    DrawSpinningCube(rect, rotationAngle);
                 }
-            });
+            }
+
+            Raylib.DrawText($"Mode: {(isCachedMode ? "Cached (Press 'C')" : "Continuous (Press 'C')")}", 10, 10, 20, isCachedMode ? Raylib_cs.Color.Green : Raylib_cs.Color.Red);
 
             Raylib.EndDrawing();
         }
+        
+        Raylib.UnloadRenderTexture(cacheTexture);
+    }
+
+    static void DrawSpinningCube(Rectangle rect, float rotationAngle)
+    {
+        Raylib.BeginScissorMode((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
+                    
+        float cx = rect.X + rect.Width / 2;
+        float cy = rect.Y + rect.Height / 2;
+        float size = Math.Min(rect.Width, rect.Height) * 0.4f;
+        
+        float rad = rotationAngle * (float)Math.PI / 180f;
+        float cos = (float)Math.Cos(rad);
+        float sin = (float)Math.Sin(rad);
+
+        System.Numerics.Vector3[] vertices = new System.Numerics.Vector3[]
+        {
+            new (-1, -1, -1), new (1, -1, -1), new (1, 1, -1), new (-1, 1, -1),
+            new (-1, -1, 1), new (1, -1, 1), new (1, 1, 1), new (-1, 1, 1)
+        };
+
+        System.Numerics.Vector2[] proj = new System.Numerics.Vector2[8];
+        for (int j = 0; j < 8; j++)
+        {
+            float x = vertices[j].X;
+            float y = vertices[j].Y;
+            float z = vertices[j].Z;
+
+            float x1 = x * cos - z * sin;
+            float z1 = z * cos + x * sin;
+            
+            float y2 = y * cos - z1 * sin;
+            float z2 = z1 * cos + y * sin;
+
+            proj[j] = new System.Numerics.Vector2(cx + x1 * size, cy + y2 * size);
+        }
+
+        int[,] edges = new int[,] {
+            {0,1}, {1,2}, {2,3}, {3,0},
+            {4,5}, {5,6}, {6,7}, {7,4},
+            {0,4}, {1,5}, {2,6}, {3,7}
+        };
+
+        for (int j = 0; j < 12; j++)
+        {
+            Raylib.DrawLineEx(proj[edges[j,0]], proj[edges[j,1]], 2f, Raylib_cs.Color.Lime);
+        }
+
+        Raylib.EndScissorMode();
     }
 }
