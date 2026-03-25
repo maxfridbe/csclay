@@ -82,12 +82,14 @@ class Program
                 .ChildGap((ushort)(10 * globalScale))
                 .Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale))
                 .Sizing(Fixed(Raylib.GetScreenWidth()), Fixed(Raylib.GetScreenHeight()))
-            , new Color(40, 44, 52), () => 
+                .Color(40, 44, 52)
+            , () => 
             {
                 Container("header", c => c
                     .Sizing(Grow(), Fixed(60 * globalScale))
                     .Align(LayoutAlignmentX.Center, LayoutAlignmentY.Center)
-                , new Color(60, 64, 72), () => 
+                    .Color(60, 64, 72)
+                , () => 
                 {
                     Text("󰀘 CSCLAY PORT", t => t.Size((ushort)(32 * globalScale)).Color(255, 255, 255));
                 });
@@ -104,7 +106,8 @@ class Program
                         .Sizing(Fixed(200 * globalScale), Grow())
                         .Padding((ushort)(10 * globalScale), (ushort)(10 * globalScale))
                         .ChildGap((ushort)(10 * globalScale))
-                    , new Color(50, 54, 62), () => 
+                        .Color(50, 54, 62)
+                    , () => 
                     {
                         for (int i = 1; i <= 5; i++)
                         {
@@ -114,7 +117,8 @@ class Program
                                 .Sizing(Grow(), Fixed(40 * globalScale))
                                 .Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center)
                                 .Padding((ushort)(10 * globalScale), 0)
-                            , color, () => 
+                                .Color(color)
+                            , () => 
                             {
                                 Text($"󰉋 Menu Item {i}", t => t.Size((ushort)(18 * globalScale)).Color(255, 255, 255));
                             });
@@ -127,7 +131,8 @@ class Program
                         .Sizing(Grow(), Grow())
                         .Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale))
                         .ChildGap((ushort)(20 * globalScale))
-                    , new Color(30, 34, 42), () => 
+                        .Color(30, 34, 42)
+                    , () => 
                     {
                         Text("Welcome to the Clay C# Port!", t => t.Size((ushort)(24 * globalScale)).Color(255, 255, 255));
                         
@@ -136,8 +141,11 @@ class Program
 
                         // Modal Trigger Button
                         string modalBtnId = "modal-trigger";
-                        Container(modalBtnId, c => c.Padding((ushort)(20 * globalScale), (ushort)(10 * globalScale)), 
-                            UI.IsHovered(modalBtnId) ? new Color(80, 180, 100) : new Color(40, 140, 60), () => 
+                        var btnColor = UI.IsHovered(modalBtnId) ? new Color(80, 180, 100) : new Color(40, 140, 60);
+                        Container(modalBtnId, c => c
+                            .Padding((ushort)(20 * globalScale), (ushort)(10 * globalScale))
+                            .Color(btnColor)
+                        , () => 
                         {
                             Text("󰒓 Open Settings", t => t.Size((ushort)(18 * globalScale)).Color(255, 255, 255));
                             
@@ -149,13 +157,20 @@ class Program
                             if (showModal)
                             {
                                 // Render a popup menu attached to the button
-                                FloatingContainer("modal", 
-                                    l => l.Sizing(Fixed(300 * globalScale), Fit()).Direction(LayoutDirection.TopToBottom),
-                                    f => f.Attach(FloatingAttachPoint.LeftTop, FloatingAttachPoint.LeftBottom, FloatingAttachToElement.Parent).ZIndex(1000).Offset(0, 5),
-                                    new Color(45, 49, 57, 240), // Slightly transparent
+                                Container("modal", 
+                                    c => c
+                                        .Sizing(Fixed(300 * globalScale), Fit())
+                                        .Direction(LayoutDirection.TopToBottom)
+                                        .Color(45, 49, 57, 240) // Slightly transparent
+                                        .Floating(f => f.Attach(FloatingAttachPoint.LeftTop, FloatingAttachPoint.LeftBottom, FloatingAttachToElement.Parent).ZIndex(1000).Offset(0, 5)),
                                     () => 
                                     {
-                                        Container("modal-header", c => c.Sizing(Grow(), Fixed(50 * globalScale)).Padding((ushort)(15 * globalScale), 0).Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center), new Color(70, 74, 82), () => 
+                                        Container("modal-header", c => c
+                                            .Sizing(Grow(), Fixed(50 * globalScale))
+                                            .Padding((ushort)(15 * globalScale), 0)
+                                            .Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center)
+                                            .Color(70, 74, 82)
+                                        , () => 
                                         {
                                             Text("󰒓 Settings Modal", t => t.Size((ushort)(20 * globalScale)).Color(255, 255, 255));
                                             
@@ -178,10 +193,14 @@ class Program
                         });
 
                         // Scrollable pane
-                        ScrollContainer("scroll-pane", 
-                            l => l.Sizing(Grow(), Grow()).Direction(LayoutDirection.TopToBottom).ChildGap((ushort)(10 * globalScale)),
-                            cl => cl.Vertical().Offset(0, scrollY),
-                            new Color(25, 29, 36), () => 
+                        Container("scroll-pane", 
+                            c => c
+                                .Sizing(Grow(), Grow())
+                                .Direction(LayoutDirection.TopToBottom)
+                                .ChildGap((ushort)(10 * globalScale))
+                                .Color(25, 29, 36)
+                                .Scroll(cl => cl.Vertical().Offset(0, scrollY)),
+                            () => 
                         {
                             if (UI.Hovered())
                             {
@@ -203,7 +222,8 @@ class Program
                                     .Sizing(Grow(), Fixed(50 * globalScale))
                                     .Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center)
                                     .Padding((ushort)(15 * globalScale), 0)
-                                , itemColor, () => 
+                                    .Color(itemColor)
+                                , () => 
                                 {
                                     Text($"󰋚 Scrollable Item {i}", t => t.Size((ushort)(18 * globalScale)).Color(220, 220, 220));
                                 });

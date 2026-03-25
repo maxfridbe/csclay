@@ -22,7 +22,8 @@ public class FluentTests
             .Padding(20, 10)
             .Direction(LayoutDirection.LeftToRight)
             .Align(LayoutAlignmentX.Center, LayoutAlignmentY.Center)
-        , new Color(255, 0, 0), () => {
+            .Color(255, 0, 0)
+        , () => {
             Clay.Text("Hello", t => t.Size(20).Color(255, 255, 255));
         });
 

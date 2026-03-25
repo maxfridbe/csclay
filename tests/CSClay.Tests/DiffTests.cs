@@ -444,12 +444,14 @@ int main() {{
                     .ChildGap(10)
                     .Padding(20, 20)
                     .Sizing(Fixed(800), Fixed(600))
-                , new Color(40, 44, 52), () => 
+                    .Color(40, 44, 52)
+                , () => 
                 {
                     Container("header", c => c
                         .Sizing(Grow(), Fixed(60))
                         .Align(LayoutAlignmentX.Center, LayoutAlignmentY.Center)
-                    , new Color(60, 64, 72), () => 
+                        .Color(60, 64, 72)
+                    , () => 
                     {
                         Text("CLAY C# PORT", t => t.Size(32).Color(255, 255, 255));
                     });
@@ -464,16 +466,18 @@ int main() {{
                             .Sizing(Fixed(200), Grow())
                             .Padding(10, 10)
                             .ChildGap(10)
-                        , new Color(50, 54, 62), () => 
+                            .Color(50, 54, 62)
+                        , () => 
                         {
-                            Container("item-1", c => c.Sizing(Grow(), Fixed(40)), new Color(70, 74, 82));
+                            Container("item-1", c => c.Sizing(Grow(), Fixed(40)).Color(70, 74, 82));
                         });
 
                         Container("content", c => c
                             .Sizing(Grow(), Grow())
                             .Padding(20, 20)
                             .ChildGap(20)
-                        , new Color(30, 34, 42), () => 
+                            .Color(30, 34, 42)
+                        , () => 
                         {
                             Text("Welcome to the Clay C# Port!", t => t.Size(24).Color(255, 255, 255));
                         });
@@ -495,7 +499,8 @@ int main() {{
             () => {
                 Container("root", c => c
                     .Sizing(Fixed(200), Fit())
-                , new Color(40, 44, 52), () => {
+                    .Color(40, 44, 52)
+                , () => {
                     Text("This is a long sentence that should wrap into multiple lines based on the fixed width of the parent.", t => t.Size(20));
                 });
             }, 800, 600);

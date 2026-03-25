@@ -70,18 +70,41 @@ public static class Clay
     public class LayoutBuilder
     {
         public LayoutConfig Config = new();
+        public Color? BackgroundColor { get; private set; }
+        public FloatingConfig? FloatingConfig { get; private set; }
+        public ClipConfig? ClipConfig { get; private set; }
+
         public LayoutBuilder Sizing(SizingAxis width, SizingAxis height) { Config.Sizing = new Sizing { Width = width, Height = height }; return this; }
         public LayoutBuilder Padding(ushort x, ushort y) { Config.Padding = new Padding(x, y); return this; }
         public LayoutBuilder Padding(ushort left, ushort right, ushort top, ushort bottom) { Config.Padding = new Padding(left, right, top, bottom); return this; }
         public LayoutBuilder ChildGap(ushort gap) { Config.ChildGap = gap; return this; }
         public LayoutBuilder Align(LayoutAlignmentX x, LayoutAlignmentY y) { Config.ChildAlignment = new ChildAlignment { X = x, Y = y }; return this; }
         public LayoutBuilder Direction(LayoutDirection direction) { Config.LayoutDirection = direction; return this; }
+        public LayoutBuilder Color(float r, float g, float b, float a = 255) { BackgroundColor = new CSClay.Color(r, g, b, a); return this; }
+        public LayoutBuilder Color(CSClay.Color color) { BackgroundColor = color; return this; }
+        
+        public LayoutBuilder Floating(Action<FloatingBuilder> floatingBuilder)
+        {
+            var f = new FloatingBuilder();
+            floatingBuilder(f);
+            FloatingConfig = f.Config;
+            return this;
+        }
+
+        public LayoutBuilder Scroll(Action<ClipBuilder> clipBuilder)
+        {
+            var c = new ClipBuilder();
+            clipBuilder(c);
+            ClipConfig = c.Config;
+            return this;
+        }
     }
 
     public class TextBuilder
     {
         public TextConfig Config = new();
-        public TextBuilder Color(float r, float g, float b, float a = 255) { Config.TextColor = new Color(r, g, b, a); return this; }
+        public TextBuilder Color(float r, float g, float b, float a = 255) { Config.TextColor = new CSClay.Color(r, g, b, a); return this; }
+        public TextBuilder Color(CSClay.Color color) { Config.TextColor = color; return this; }
         public TextBuilder Size(ushort fontSize) { Config.FontSize = fontSize; return this; }
         public TextBuilder Wrap(TextWrapMode mode) { Config.WrapMode = mode; return this; }
     }
@@ -111,42 +134,29 @@ public static class Clay
     {
         var builder = new LayoutBuilder();
         configBuilder(builder);
-        UI.Container(id, builder.Config, children);
-    }
 
-    public static void Container(string id, Action<LayoutBuilder> configBuilder, Color backgroundColor, Action? children = null)
-    {
-        var builder = new LayoutBuilder();
-        configBuilder(builder);
-        UI.Container(id, builder.Config, backgroundColor, children);
-    }
+        var context = UI.GetCurrentContext();
+        context.OpenElement(id, ElementType.None);
+        context.ConfigureOpenElement(builder.Config);
+        
+        if (builder.BackgroundColor.HasValue)
+        {
+            context.ConfigureRectangleElement(new RectangleConfig { Color = builder.BackgroundColor.Value });
+        }
+        
+        if (builder.FloatingConfig.HasValue)
+        {
+            context.ConfigureFloatingElement(builder.FloatingConfig.Value);
+        }
+        
+        if (builder.ClipConfig.HasValue)
+        {
+            context.ConfigureClipElement(builder.ClipConfig.Value);
+        }
 
-    public static void FloatingContainer(string id, Action<LayoutBuilder> layoutBuilder, Action<FloatingBuilder> floatingBuilder, Action? children = null)
-    {
-        var l = new LayoutBuilder(); layoutBuilder(l);
-        var f = new FloatingBuilder(); floatingBuilder(f);
-        UI.FloatingContainer(id, l.Config, f.Config, children);
-    }
+        children?.Invoke();
 
-    public static void FloatingContainer(string id, Action<LayoutBuilder> layoutBuilder, Action<FloatingBuilder> floatingBuilder, Color backgroundColor, Action? children = null)
-    {
-        var l = new LayoutBuilder(); layoutBuilder(l);
-        var f = new FloatingBuilder(); floatingBuilder(f);
-        UI.FloatingContainer(id, l.Config, f.Config, backgroundColor, children);
-    }
-
-    public static void ScrollContainer(string id, Action<LayoutBuilder> layoutBuilder, Action<ClipBuilder> clipBuilder, Action? children = null)
-    {
-        var l = new LayoutBuilder(); layoutBuilder(l);
-        var c = new ClipBuilder(); clipBuilder(c);
-        UI.ScrollContainer(id, l.Config, c.Config, children);
-    }
-
-    public static void ScrollContainer(string id, Action<LayoutBuilder> layoutBuilder, Action<ClipBuilder> clipBuilder, Color backgroundColor, Action? children = null)
-    {
-        var l = new LayoutBuilder(); layoutBuilder(l);
-        var c = new ClipBuilder(); clipBuilder(c);
-        UI.ScrollContainer(id, l.Config, c.Config, backgroundColor, children);
+        context.CloseElement();
     }
 
     public static void Text(string text, Action<TextBuilder> configBuilder)
