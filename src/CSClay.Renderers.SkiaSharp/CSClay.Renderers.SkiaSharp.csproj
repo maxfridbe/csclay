@@ -5,9 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Description>SkiaSharp renderer for the CSClay UI layout library.</Description>
-    <PackageProjectUrl>https://github.com/maxfridbe/CSClay</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/maxfridbe/CSClay.git</RepositoryUrl>
-    <PackageLicenseExpression>Zlib</PackageLicenseExpression>
     <PackageTags>ui;layout;skia;skiasharp;renderer;CSClay</PackageTags>
   </PropertyGroup>
 

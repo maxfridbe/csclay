@@ -5,9 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Description>Raylib-cs renderer for the CSClay UI layout library.</Description>
-    <PackageProjectUrl>https://github.com/maxfridbe/csclay</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/maxfridbe/csclay.git</RepositoryUrl>
-    <PackageLicenseExpression>Zlib</PackageLicenseExpression>
     <PackageTags>ui;layout;raylib;raylib-cs;renderer;csclay</PackageTags>
   </PropertyGroup>
 

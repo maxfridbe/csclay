@@ -5,9 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Description>Pure C# port of the CSClay high-performance UI layout library.</Description>
-    <PackageProjectUrl>https://github.com/maxfridbe/CSClay</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/maxfridbe/CSClay.git</RepositoryUrl>
-    <PackageLicenseExpression>Zlib</PackageLicenseExpression>
     <PackageTags>ui;layout;game-dev;immediate-mode;flexbox</PackageTags>
   </PropertyGroup>
 

@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <Version>$([System.IO.File]::ReadAllText($(MSBuildThisFileDirectory)version.txt).Trim())</Version>
+    <PackageProjectUrl>https://github.com/maxfridbe/CSClay</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/maxfridbe/CSClay.git</RepositoryUrl>
+    <PackageLicenseExpression>Zlib</PackageLicenseExpression>
+    <Authors>maxfridbe</Authors>
+    <Copyright>Copyright © 2026</Copyright>
+  </PropertyGroup>
+</Project>

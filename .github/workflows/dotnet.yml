@@ -28,7 +28,7 @@ jobs:
       run: dotnet test --no-build --verbosity normal -c Release
 
     - name: Pack Packages
-      run: ./build_pkgs.sh 0.1.${{ github.run_number }}
+      run: ./build_pkgs.sh
 
     - name: Upload NuGet Package
       uses: actions/upload-artifact@v4
@@ -45,6 +45,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Get Version
+        id: get_version
+        run: echo "VERSION=$(cat version.txt | xargs)" >> $GITHUB_OUTPUT
+
       - name: Download NuGet Packages
         uses: actions/download-artifact@v4
         with:
@@ -54,8 +58,8 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.1.${{ github.run_number }}
-          name: Release v0.1.${{ github.run_number }}
+          tag_name: v${{ steps.get_version.outputs.VERSION }}
+          name: Release v${{ steps.get_version.outputs.VERSION }}
           draft: false
           prerelease: false
           generate_release_notes: true
