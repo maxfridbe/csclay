@@ -137,7 +137,7 @@ class Program
                         {
                             Text("󰒓 Open Settings", t => t.Size((ushort)(18 * globalScale)).Color(255, 255, 255));
                             
-                            if (Raylib.IsMouseButtonPressed(MouseButton.Left) && UI.IsHovered(modalBtnId))
+                            if (Raylib.IsMouseButtonPressed(MouseButton.Left) && UI.Hovered())
                             {
                                 showModal = true;
                             }
@@ -182,38 +182,9 @@ class Program
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Raylib_cs.Color.Black);
 
-            RenderWithNerdFont(commands, context, nerdFont);
+            CSClay.Renderers.Raylib.RaylibRenderer.Render(commands, context, nerdFont);
 
             Raylib.EndDrawing();
-        }
-    }
-
-    static void RenderWithNerdFont(Span<RenderCommand> commands, ClayContext context, Font font)
-    {
-        foreach (var cmd in commands)
-        {
-            var rect = new Rectangle(cmd.BoundingBox.X, cmd.BoundingBox.Y, cmd.BoundingBox.Width, cmd.BoundingBox.Height);
-
-            switch (cmd.CommandType)
-            {
-                case RenderCommandType.Rectangle:
-                    var c = cmd.RenderData.Rectangle.Color;
-                    Raylib.DrawRectangleRec(rect, new Raylib_cs.Color((byte)c.R, (byte)c.G, (byte)c.B, (byte)c.A));
-                    break;
-                case RenderCommandType.Text:
-                    var textData = cmd.RenderData.Text;
-                    string fullText = context.GetString(textData.TextIndex);
-                    string lineText = fullText.Substring(textData.LineStart, textData.LineLength);
-                    var tc = textData.TextColor;
-                    Raylib.DrawTextEx(font, lineText, new System.Numerics.Vector2(rect.X, rect.Y), textData.FontSize, 0, new Raylib_cs.Color((byte)tc.R, (byte)tc.G, (byte)tc.B, (byte)tc.A));
-                    break;
-                case RenderCommandType.ScissorStart:
-                    Raylib.BeginScissorMode((int)rect.X, (int)rect.Y, (int)rect.Width, (int)rect.Height);
-                    break;
-                case RenderCommandType.ScissorEnd:
-                    Raylib.EndScissorMode();
-                    break;
-            }
         }
     }
 }

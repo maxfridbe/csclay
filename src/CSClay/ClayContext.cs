@@ -470,25 +470,24 @@ _customConfigsCount = 0;
         // 6. Flex distribution Y (Grow)
         SizeContainersAlongAxis(false);
 
-        // Calculate positions (this also fills the render commands array)
-        CalculatePositions();
-
-        // Sort ALL render commands by Z-index (simple bubble sort)
-        var renderCommands = GetRenderCommands().Slice(0, _renderCommandsCount);
-        int sortMax = _renderCommandsCount - 1;
+        // Sort tree roots by z-index (simple bubble sort as in original Clay)
+        var roots = GetLayoutElementTreeRoots();
+        int sortMax = _layoutElementTreeRootsCount - 1;
         while (sortMax > 0)
         {
             for (int i = 0; i < sortMax; i++)
             {
-                if (renderCommands[i + 1].ZIndex < renderCommands[i].ZIndex)
+                if (roots[i + 1].ZIndex < roots[i].ZIndex)
                 {
-                    var temp = renderCommands[i];
-                    renderCommands[i] = renderCommands[i + 1];
-                    renderCommands[i + 1] = temp;
+                    var temp = roots[i];
+                    roots[i] = roots[i + 1];
+                    roots[i + 1] = temp;
                 }
             }
             sortMax--;
         }
+
+        CalculatePositions();
     }
 
     private void SizeContainersAlongAxis(bool xAxis)

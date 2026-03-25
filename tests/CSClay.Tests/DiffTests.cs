@@ -1,4 +1,6 @@
 using CSClay;
+using CSClay.Fluent;
+using static CSClay.Fluent.Clay;
 using Xunit;
 using Xunit.Abstractions;
 using System.Text;
@@ -361,8 +363,10 @@ int main() {{
                             Sizing = new Sizing { Width = SizingAxis.Fixed(100), Height = SizingAxis.Fixed(100) } 
                         }, new FloatingConfig { 
                             AttachPoints = new FloatingAttachPoints { Element = FloatingAttachPoint.LeftTop, Parent = FloatingAttachPoint.RightBottom },
+                            AttachTo = FloatingAttachToElement.Parent,
                             ZIndex = 100
                         }, new Color(255, 255, 0));
+
                     });
                     UI.Container("sibling", new LayoutConfig { 
                         Sizing = new Sizing { Width = SizingAxis.Fixed(200), Height = SizingAxis.Fixed(200) } 
@@ -404,6 +408,81 @@ int main() {{
     }
 
     [Fact]
+    public void TestDemoParity()
+    {
+        AssertParity(@"
+            CLAY(CLAY_ID(""root""), { 
+                .layout = { .layoutDirection = CLAY_TOP_TO_BOTTOM, .childGap = 10, .padding = { 20, 20, 20, 20 }, .sizing = { CLAY_SIZING_FIXED(800), CLAY_SIZING_FIXED(600) } },
+                .backgroundColor = { 40, 44, 52, 255 }
+            }) {
+                CLAY(CLAY_ID(""header""), { 
+                    .layout = { .sizing = { CLAY_SIZING_GROW(0, 0), CLAY_SIZING_FIXED(60) }, .childAlignment = { .x = CLAY_ALIGN_X_CENTER, .y = CLAY_ALIGN_Y_CENTER } },
+                    .backgroundColor = { 60, 64, 72, 255 }
+                }) {
+                    CLAY_TEXT(CLAY_STRING(""CLAY C# PORT""), CLAY_TEXT_CONFIG({ .fontSize = 32 }));
+                }
+                CLAY(CLAY_ID(""body""), { 
+                    .layout = { .layoutDirection = CLAY_LEFT_TO_RIGHT, .childGap = 20, .sizing = { CLAY_SIZING_GROW(0, 0), CLAY_SIZING_GROW(0, 0) } }
+                }) {
+                    CLAY(CLAY_ID(""sidebar""), { 
+                        .layout = { .sizing = { CLAY_SIZING_FIXED(200), CLAY_SIZING_GROW(0, 0) }, .padding = { 10, 10, 10, 10 }, .childGap = 10 },
+                        .backgroundColor = { 50, 54, 62, 255 }
+                    }) {
+                        CLAY(CLAY_ID(""item-1""), { .layout = { .sizing = { CLAY_SIZING_GROW(0, 0), CLAY_SIZING_FIXED(40) } }, .backgroundColor = { 70, 74, 82, 255 } }) {}
+                    }
+                    CLAY(CLAY_ID(""content""), { 
+                        .layout = { .sizing = { CLAY_SIZING_GROW(0, 0), CLAY_SIZING_GROW(0, 0) }, .padding = { 20, 20, 20, 20 }, .childGap = 20 },
+                        .backgroundColor = { 30, 34, 42, 255 }
+                    }) {
+                        CLAY_TEXT(CLAY_STRING(""Welcome to the Clay C# Port!""), CLAY_TEXT_CONFIG({ .fontSize = 24 }));
+                    }
+                }
+            }",
+            () => {
+                Container("root", c => c
+                    .Direction(LayoutDirection.TopToBottom)
+                    .ChildGap(10)
+                    .Padding(20, 20)
+                    .Sizing(Fixed(800), Fixed(600))
+                , new Color(40, 44, 52), () => 
+                {
+                    Container("header", c => c
+                        .Sizing(Grow(), Fixed(60))
+                        .Align(LayoutAlignmentX.Center, LayoutAlignmentY.Center)
+                    , new Color(60, 64, 72), () => 
+                    {
+                        Text("CLAY C# PORT", t => t.Size(32).Color(255, 255, 255));
+                    });
+
+                    Container("body", c => c
+                        .Direction(LayoutDirection.LeftToRight)
+                        .ChildGap(20)
+                        .Sizing(Grow(), Grow())
+                    , () => 
+                    {
+                        Container("sidebar", c => c
+                            .Sizing(Fixed(200), Grow())
+                            .Padding(10, 10)
+                            .ChildGap(10)
+                        , new Color(50, 54, 62), () => 
+                        {
+                            Container("item-1", c => c.Sizing(Grow(), Fixed(40)), new Color(70, 74, 82));
+                        });
+
+                        Container("content", c => c
+                            .Sizing(Grow(), Grow())
+                            .Padding(20, 20)
+                            .ChildGap(20)
+                        , new Color(30, 34, 42), () => 
+                        {
+                            Text("Welcome to the Clay C# Port!", t => t.Size(24).Color(255, 255, 255));
+                        });
+                    });
+                });
+            }, 800, 600);
+    }
+
+    [Fact]
     public void TestTextWrappingAndFit()
     {
         AssertParity(@"
@@ -414,10 +493,10 @@ int main() {{
                 CLAY_TEXT(CLAY_STRING(""This is a long sentence that should wrap into multiple lines based on the fixed width of the parent.""), CLAY_TEXT_CONFIG({ .fontSize = 20 }));
             }",
             () => {
-                UI.Container("root", new LayoutConfig { 
-                    Sizing = new Sizing { Width = SizingAxis.Fixed(200), Height = SizingAxis.Fit() } 
-                }, new Color(40, 44, 52), () => {
-                    UI.Text("This is a long sentence that should wrap into multiple lines based on the fixed width of the parent.", new TextConfig { FontSize = 20 });
+                Container("root", c => c
+                    .Sizing(Fixed(200), Fit())
+                , new Color(40, 44, 52), () => {
+                    Text("This is a long sentence that should wrap into multiple lines based on the fixed width of the parent.", t => t.Size(20));
                 });
             }, 800, 600);
     }
