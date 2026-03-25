@@ -149,175 +149,179 @@ class Program
             UI.SetPointerState(new CSClay.Vector2(mousePos.X, mousePos.Y), Raylib.IsMouseButtonDown(MouseButton.Left));
 
             // 2. Declare UI
+            void DeclareUI()
+            {
             UI.Begin(arena, new CSClay.Dimensions(Raylib.GetScreenWidth(), Raylib.GetScreenHeight()));
             
-            Container("root", c => c
-                .Direction(LayoutDirection.TopToBottom)
-                .ChildGap((ushort)(10 * globalScale))
-                .Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale))
-                .Sizing(Fixed(Raylib.GetScreenWidth()), Fixed(Raylib.GetScreenHeight()))
-                .Color(theme.Background)
-            , () => 
-            {
-                Container("header", c => c
-                    .Sizing(Grow(), Fixed(60 * globalScale))
-                    .Align(LayoutAlignmentX.Center, LayoutAlignmentY.Center)
-                    .Color(theme.HeaderBg)
+                Container("root", c => c
+                    .Direction(LayoutDirection.TopToBottom)
+                    .ChildGap((ushort)(10 * globalScale))
+                    .Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale))
+                    .Sizing(Fixed(Raylib.GetScreenWidth()), Fixed(Raylib.GetScreenHeight()))
+                    .Color(theme.Background)
                 , () => 
                 {
-                    Text("󰀘 CSCLAY PORT", t => t.Size((ushort)(32 * globalScale)).Color(theme.TextPrimary));
-                });
-
-                Container("body", c => c
-                    .Direction(LayoutDirection.LeftToRight)
-                    .ChildGap((ushort)(20 * globalScale))
-                    .Sizing(Grow(), Grow())
-                , () => 
-                {
-                    // Sidebar
-                    Container("sidebar", c => c
-                        .Direction(LayoutDirection.TopToBottom)
-                        .Sizing(Fixed(200 * globalScale), Grow())
-                        .Padding((ushort)(10 * globalScale), (ushort)(10 * globalScale))
-                        .ChildGap((ushort)(10 * globalScale))
-                        .Color(theme.SidebarBg)
+                    Container("header", c => c
+                        .Sizing(Grow(), Fixed(60 * globalScale))
+                        .Align(LayoutAlignmentX.Center, LayoutAlignmentY.Center)
+                        .Color(theme.HeaderBg)
                     , () => 
                     {
-                        for (int i = 1; i <= 5; i++)
-                        {
-                            string itemId = $"sidebar-item-{i}";
-                            var color = UI.IsHovered(itemId) ? theme.SidebarItemHover : theme.SidebarItemIdle;
-                            Container(itemId, c => c
-                                .Sizing(Grow(), Fixed(40 * globalScale))
-                                .Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center)
-                                .Padding((ushort)(10 * globalScale), 0)
-                                .Color(color)
-                                .CornerRadius(8 * globalScale)
-                            , () => 
-                            {
-                                Text($"󰉋 Menu Item {i}", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextPrimary));
-                            });
-                        }
+                        Text("󰀘 CSCLAY PORT", t => t.Size((ushort)(32 * globalScale)).Color(theme.TextPrimary));
                     });
 
-                    // Content
-                    Container("content", c => c
-                        .Direction(LayoutDirection.TopToBottom)
-                        .Sizing(Grow(), Grow())
-                        .Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale))
+                    Container("body", c => c
+                        .Direction(LayoutDirection.LeftToRight)
                         .ChildGap((ushort)(20 * globalScale))
-                        .Color(theme.ContentBg)
+                        .Sizing(Grow(), Grow())
                     , () => 
                     {
-                        Container("header-row", c => c.Sizing(Grow(), Fit()).Direction(LayoutDirection.LeftToRight).ChildGap(20), () => 
-                        {
-                            Text("Welcome to the Clay C# Port!", t => t.Size((ushort)(24 * globalScale)).Color(theme.TextPrimary));
-                            
-                            // Custom Element for Spinning Cube
-                            Custom("spinning-cube", c => c
-                                .Sizing(Fixed(100 * globalScale), Fixed(100 * globalScale))
-                            , 1); // 1 = Cube Custom ID
-                        });
-                        
-                        Text("This is a high-performance, zero-allocation UI layout library ported from C. Use Ctrl + and Ctrl - to scale the UI!", 
-                            t => t.Size((ushort)(18 * globalScale)).Color(theme.TextSecondary).Wrap(TextWrapMode.Words));
-
-                        // Modal Trigger Button
-                        string modalBtnId = "modal-trigger";
-                        var btnColor = UI.IsHovered(modalBtnId) ? theme.ButtonHover : theme.ButtonIdle;
-                        Container(modalBtnId, c => c
-                            .Padding((ushort)(20 * globalScale), (ushort)(10 * globalScale))
-                            .Color(btnColor)
-                            .CornerRadius(8 * globalScale)
+                        // Sidebar
+                        Container("sidebar", c => c
+                            .Direction(LayoutDirection.TopToBottom)
+                            .Sizing(Fixed(200 * globalScale), Grow())
+                            .Padding((ushort)(10 * globalScale), (ushort)(10 * globalScale))
+                            .ChildGap((ushort)(10 * globalScale))
+                            .Color(theme.SidebarBg)
                         , () => 
                         {
-                            Text("󰒓 Open Settings", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextPrimary));
-                            
-                            if (Raylib.IsMouseButtonPressed(MouseButton.Left) && UI.Hovered())
+                            for (int i = 1; i <= 5; i++)
                             {
-                                showModal = !showModal;
-                            }
-
-                            if (showModal)
-                            {
-                                // Render a popup menu attached to the button
-                                Container("modal", 
-                                    c => c
-                                        .Sizing(Fixed(300 * globalScale), Fit())
-                                        .Direction(LayoutDirection.TopToBottom)
-                                        .Color(theme.ModalBg)
-                                        .Floating(f => f.Attach(FloatingAttachPoint.LeftTop, FloatingAttachPoint.LeftBottom, FloatingAttachToElement.Parent).ZIndex(1000).Offset(0, 5)),
-                                    () => 
-                                    {
-                                        Container("modal-header", c => c
-                                            .Sizing(Grow(), Fixed(50 * globalScale))
-                                            .Padding((ushort)(15 * globalScale), 0)
-                                            .Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center)
-                                            .Color(theme.ModalHeaderBg)
-                                        , () => 
-                                        {
-                                            Text("󰒓 Settings Modal", t => t.Size((ushort)(20 * globalScale)).Color(theme.TextPrimary));
-                                            
-                                            // Close button
-                                            Container("close-btn", c => c.Align(LayoutAlignmentX.Right, LayoutAlignmentY.Center).Sizing(Grow(), Fit()), () => {
-                                                Text("󰅖 ", t => t.Size((ushort)(24 * globalScale)).Color(new Color(255, 100, 100)));
-                                                if (Raylib.IsMouseButtonPressed(MouseButton.Left) && UI.Hovered()) showModal = false;
-                                            });
-                                        });
-
-                                        Container("modal-body", c => c.Direction(LayoutDirection.TopToBottom).Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale)).ChildGap((ushort)(15 * globalScale)), () => 
-                                        {
-                                            Text("󰄬 Setting 1: Enabled", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextSecondary));
-                                            Text("󰄬 Setting 2: Performance Mode", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextSecondary));
-                                            Text("󰄱 Setting 3: Beta Features", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextSecondary));
-                                        });
-                                    }
-                                );
-                            }
-                        });
-
-                        // Scrollable pane
-                        Container("scroll-pane", 
-                            c => c
-                                .Sizing(Grow(), Grow())
-                                .Direction(LayoutDirection.TopToBottom)
-                                .ChildGap((ushort)(10 * globalScale))
-                                .Color(theme.ScrollPaneBg)
-                                .Scroll(cl => cl.Vertical().Offset(0, scrollY)),
-                            () => 
-                        {
-                            if (UI.Hovered())
-                            {
-                                float wheel = Raylib.GetMouseWheelMove();
-                                if (wheel != 0)
-                                {
-                                    scrollY += wheel * 30.0f; // Scroll speed
-                                    if (scrollY > 0) scrollY = 0; // Prevent scrolling past top
-                                    // A real implementation would also clamp the bottom based on content height
-                                }
-                            }
-
-                            for (int i = 1; i <= 100; i++)
-                            {
-                                string scrollItemId = $"scroll-item-{i}";
-                                var itemColor = UI.IsHovered(scrollItemId) ? theme.ScrollItemHover : theme.ScrollItemIdle;
-                                
-                                Container(scrollItemId, c => c
-                                    .Sizing(Grow(), Fixed(50 * globalScale))
+                                string itemId = $"sidebar-item-{i}";
+                                var color = UI.IsHovered(itemId) ? theme.SidebarItemHover : theme.SidebarItemIdle;
+                                Container(itemId, c => c
+                                    .Sizing(Grow(), Fixed(40 * globalScale))
                                     .Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center)
-                                    .Padding((ushort)(15 * globalScale), 0)
-                                    .Color(itemColor)
+                                    .Padding((ushort)(10 * globalScale), 0)
+                                    .Color(color)
                                     .CornerRadius(8 * globalScale)
                                 , () => 
                                 {
-                                    Text($"󰋚 Scrollable Item {i}", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextPrimary));
+                                    Text($"󰉋 Menu Item {i}", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextPrimary));
                                 });
                             }
                         });
+
+                        // Content
+                        Container("content", c => c
+                            .Direction(LayoutDirection.TopToBottom)
+                            .Sizing(Grow(), Grow())
+                            .Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale))
+                            .ChildGap((ushort)(20 * globalScale))
+                            .Color(theme.ContentBg)
+                        , () => 
+                        {
+                            Container("header-row", c => c.Sizing(Grow(), Fit()).Direction(LayoutDirection.LeftToRight).ChildGap(20), () => 
+                            {
+                                Text("Welcome to the Clay C# Port!", t => t.Size((ushort)(24 * globalScale)).Color(theme.TextPrimary));
+                            
+                                // Custom Element for Spinning Cube
+                                Custom("spinning-cube", c => c
+                                    .Sizing(Fixed(100 * globalScale), Fixed(100 * globalScale))
+                                , 1); // 1 = Cube Custom ID
+                            });
+                        
+                            Text("This is a high-performance, zero-allocation UI layout library ported from C. Use Ctrl + and Ctrl - to scale the UI!", 
+                                t => t.Size((ushort)(18 * globalScale)).Color(theme.TextSecondary).Wrap(TextWrapMode.Words));
+
+                            // Modal Trigger Button
+                            string modalBtnId = "modal-trigger";
+                            var btnColor = UI.IsHovered(modalBtnId) ? theme.ButtonHover : theme.ButtonIdle;
+                            Container(modalBtnId, c => c
+                                .Padding((ushort)(20 * globalScale), (ushort)(10 * globalScale))
+                                .Color(btnColor)
+                                .CornerRadius(8 * globalScale)
+                            , () => 
+                            {
+                                Text("󰒓 Open Settings", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextPrimary));
+                            
+                                if (Raylib.IsMouseButtonPressed(MouseButton.Left) && UI.Hovered())
+                                {
+                                    showModal = !showModal;
+                                }
+
+                                if (showModal)
+                                {
+                                    // Render a popup menu attached to the button
+                                    Container("modal", 
+                                        c => c
+                                            .Sizing(Fixed(300 * globalScale), Fit())
+                                            .Direction(LayoutDirection.TopToBottom)
+                                            .Color(theme.ModalBg)
+                                            .Floating(f => f.Attach(FloatingAttachPoint.LeftTop, FloatingAttachPoint.LeftBottom, FloatingAttachToElement.Parent).ZIndex(1000).Offset(0, 5)),
+                                        () => 
+                                        {
+                                            Container("modal-header", c => c
+                                                .Sizing(Grow(), Fixed(50 * globalScale))
+                                                .Padding((ushort)(15 * globalScale), 0)
+                                                .Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center)
+                                                .Color(theme.ModalHeaderBg)
+                                            , () => 
+                                            {
+                                                Text("󰒓 Settings Modal", t => t.Size((ushort)(20 * globalScale)).Color(theme.TextPrimary));
+                                            
+                                                // Close button
+                                                Container("close-btn", c => c.Align(LayoutAlignmentX.Right, LayoutAlignmentY.Center).Sizing(Grow(), Fit()), () => {
+                                                    Text("󰅖 ", t => t.Size((ushort)(24 * globalScale)).Color(new Color(255, 100, 100)));
+                                                    if (Raylib.IsMouseButtonPressed(MouseButton.Left) && UI.Hovered()) showModal = false;
+                                                });
+                                            });
+
+                                            Container("modal-body", c => c.Direction(LayoutDirection.TopToBottom).Padding((ushort)(20 * globalScale), (ushort)(20 * globalScale)).ChildGap((ushort)(15 * globalScale)), () => 
+                                            {
+                                                Text("󰄬 Setting 1: Enabled", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextSecondary));
+                                                Text("󰄬 Setting 2: Performance Mode", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextSecondary));
+                                                Text("󰄱 Setting 3: Beta Features", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextSecondary));
+                                            });
+                                        }
+                                    );
+                                }
+                            });
+
+                            // Scrollable pane
+                            Container("scroll-pane", 
+                                c => c
+                                    .Sizing(Grow(), Grow())
+                                    .Direction(LayoutDirection.TopToBottom)
+                                    .ChildGap((ushort)(10 * globalScale))
+                                    .Color(theme.ScrollPaneBg)
+                                    .Scroll(cl => cl.Vertical().Offset(0, scrollY)),
+                                () => 
+                            {
+                                if (UI.Hovered())
+                                {
+                                    float wheel = Raylib.GetMouseWheelMove();
+                                    if (wheel != 0)
+                                    {
+                                        scrollY += wheel * 30.0f; // Scroll speed
+                                        if (scrollY > 0) scrollY = 0; // Prevent scrolling past top
+                                        // A real implementation would also clamp the bottom based on content height
+                                    }
+                                }
+
+                                for (int i = 1; i <= 100; i++)
+                                {
+                                    string scrollItemId = $"scroll-item-{i}";
+                                    var itemColor = UI.IsHovered(scrollItemId) ? theme.ScrollItemHover : theme.ScrollItemIdle;
+                                
+                                    Container(scrollItemId, c => c
+                                        .Sizing(Grow(), Fixed(50 * globalScale))
+                                        .Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center)
+                                        .Padding((ushort)(15 * globalScale), 0)
+                                        .Color(itemColor)
+                                        .CornerRadius(8 * globalScale)
+                                    , () => 
+                                    {
+                                        Text($"󰋚 Scrollable Item {i}", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextPrimary));
+                                    });
+                                }
+                            });
+                        });
                     });
                 });
-            });
+            }
 
+            DeclareUI();
             var commands = UI.End();
 
             if (Raylib.IsKeyPressed(KeyboardKey.P))
@@ -328,15 +332,33 @@ class Program
                 canvas.Clear(new SkiaSharp.SKColor((byte)theme.Background.R, (byte)theme.Background.G, (byte)theme.Background.B, (byte)theme.Background.A));
                 
                 using var typeface = SkiaSharp.SKTypeface.FromFile("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf");
+                using var skPaint = new SkiaSharp.SKPaint { IsAntialias = true };
+                using var skFont = new SkiaSharp.SKFont(typeface);
 
-                // For SkiaSharp, it won't render the 3D spinning cube, but it will render the rest of the UI.
-                CSClay.Renderers.SkiaSharp.SkiaSharpRenderer.Render(canvas, commands, context, typeface);
+                // Swap TextMeasure to SkiaSharp
+                var oldMeasure = context.TextMeasure;
+                context.TextMeasure = (text, config) =>
+                {
+                    skFont.Size = config.FontSize;
+                    var width = skFont.MeasureText(text.ToString());
+                    return new CSClay.Dimensions(width, skFont.Metrics.Descent - skFont.Metrics.Ascent);
+                };
+
+                // Recalculate layout with Skia metrics
+                DeclareUI();
+                var skiaCommands = UI.End();
+
+                // Render Skia
+                CSClay.Renderers.SkiaSharp.SkiaSharpRenderer.Render(canvas, skiaCommands, context, typeface);
                 
                 using var img = surface.Snapshot();
                 using var data = img.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
                 using var stream = System.IO.File.OpenWrite("screenshot.png");
                 data.SaveTo(stream);
-                System.Console.WriteLine("Saved screenshot.png to disk.");
+                System.Console.WriteLine("Saved screenshot.png to disk using SkiaSharp metrics.");
+
+                // Restore Raylib TextMeasure
+                context.TextMeasure = oldMeasure;
             }
 
             // 3. Render
