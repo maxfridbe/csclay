@@ -226,6 +226,70 @@ int main() {{
     }
 
     [Fact]
+    public void TestComplexLayout()
+    {
+        AssertParity(@"
+            CLAY(CLAY_ID(""root""), { 
+                .layout = { .sizing = { CLAY_SIZING_FIXED(1000), CLAY_SIZING_FIXED(800) }, .layoutDirection = CLAY_TOP_TO_BOTTOM },
+                .backgroundColor = { 10, 10, 10, 255 }
+            }) {
+                CLAY(CLAY_ID(""header""), { 
+                    .layout = { .sizing = { CLAY_SIZING_GROW(0, 0), CLAY_SIZING_FIXED(80) }, .padding = { 20, 20, 0, 0 } },
+                    .backgroundColor = { 20, 20, 20, 255 }
+                }) {
+                    CLAY(CLAY_ID(""logo""), { .layout = { .sizing = { CLAY_SIZING_FIXED(100), CLAY_SIZING_GROW(0, 0) } }, .backgroundColor = { 255, 0, 0, 255 } }) {}
+                }
+                CLAY(CLAY_ID(""body""), { 
+                    .layout = { .sizing = { CLAY_SIZING_GROW(0, 0), CLAY_SIZING_GROW(0, 0) }, .layoutDirection = CLAY_LEFT_TO_RIGHT, .childGap = 20, .padding = { 20, 20, 20, 20 } },
+                    .backgroundColor = { 30, 30, 30, 255 }
+                }) {
+                    CLAY(CLAY_ID(""sidebar""), { 
+                        .layout = { .sizing = { CLAY_SIZING_PERCENT(0.25f), CLAY_SIZING_GROW(0, 0) } },
+                        .backgroundColor = { 40, 40, 40, 255 }
+                    }) {}
+                    CLAY(CLAY_ID(""content""), { 
+                        .layout = { .sizing = { CLAY_SIZING_GROW(0, 0), CLAY_SIZING_GROW(0, 0) }, .layoutDirection = CLAY_TOP_TO_BOTTOM, .childGap = 10 },
+                        .backgroundColor = { 50, 50, 50, 255 }
+                    }) {
+                        CLAY(CLAY_ID(""item1""), { .layout = { .sizing = { CLAY_SIZING_GROW(0, 0), CLAY_SIZING_FIXED(200) } }, .backgroundColor = { 60, 60, 60, 255 } }) {}
+                        CLAY(CLAY_ID(""item2""), { .layout = { .sizing = { CLAY_SIZING_GROW(0, 0), CLAY_SIZING_FIXED(200) } }, .backgroundColor = { 80, 80, 80, 255 } }) {}
+                    }
+                }
+            }",
+            () => {
+                UI.Container("root", new LayoutConfig { 
+                    Sizing = new Sizing { Width = SizingAxis.Fixed(1000), Height = SizingAxis.Fixed(800) },
+                    LayoutDirection = LayoutDirection.TopToBottom
+                }, new Color(10, 10, 10), () => {
+                    UI.Container("header", new LayoutConfig { 
+                        Sizing = new Sizing { Width = SizingAxis.Grow(), Height = SizingAxis.Fixed(80) },
+                        Padding = new Padding(20, 20, 0, 0)
+                    }, new Color(20, 20, 20), () => {
+                        UI.Container("logo", new LayoutConfig { Sizing = new Sizing { Width = SizingAxis.Fixed(100), Height = SizingAxis.Grow() } }, new Color(255, 0, 0));
+                    });
+                    UI.Container("body", new LayoutConfig { 
+                        Sizing = new Sizing { Width = SizingAxis.Grow(), Height = SizingAxis.Grow() },
+                        LayoutDirection = LayoutDirection.LeftToRight,
+                        ChildGap = 20,
+                        Padding = new Padding(20, 20, 20, 20)
+                    }, new Color(30, 30, 30), () => {
+                        UI.Container("sidebar", new LayoutConfig { 
+                            Sizing = new Sizing { Width = SizingAxis.Percent(0.25f), Height = SizingAxis.Grow() }
+                        }, new Color(40, 40, 40));
+                        UI.Container("content", new LayoutConfig { 
+                            Sizing = new Sizing { Width = SizingAxis.Grow(), Height = SizingAxis.Grow() },
+                            LayoutDirection = LayoutDirection.TopToBottom,
+                            ChildGap = 10
+                        }, new Color(50, 50, 50), () => {
+                            UI.Container("item1", new LayoutConfig { Sizing = new Sizing { Width = SizingAxis.Grow(), Height = SizingAxis.Fixed(200) } }, new Color(60, 60, 60));
+                            UI.Container("item2", new LayoutConfig { Sizing = new Sizing { Width = SizingAxis.Grow(), Height = SizingAxis.Fixed(200) } }, new Color(80, 80, 80));
+                        });
+                    });
+                });
+            }, 1000, 800);
+    }
+
+    [Fact]
     public void TestText()
     {
         AssertParity(@"

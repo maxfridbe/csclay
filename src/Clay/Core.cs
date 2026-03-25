@@ -139,13 +139,15 @@ public struct Padding
 public struct LayoutElement
 {
     public uint Id;
-    public Dimensions Dimensions; // Actual calculated dimensions
+    public uint ParentId;
+    public Dimensions Dimensions;
     public Dimensions MinDimensions;
     public Dimensions PreferredDimensions;
     public BoundingBox BoundingBox;
     public LayoutConfig Config;
-    public int ChildrenStartIndex;
-    public int ChildrenCount;
+    public int FirstChildIndex;
+    public int LastChildIndex;
+    public int NextSiblingIndex;
     public ElementType ElementType;
     public int ConfigIndex; // Base/Floating config index
     public int RectangleConfigIndex;

@@ -21,10 +21,6 @@ public class ClayContext
     private int _layoutElementsCapacity;
     private int _layoutElementsCount;
     
-    private int _layoutElementChildrenOffset;
-    private int _layoutElementChildrenCapacity;
-    private int _layoutElementChildrenCount;
-
     private int _openLayoutElementStackOffset;
     private int _openLayoutElementStackCapacity;
     private int _openLayoutElementStackCount;
@@ -133,10 +129,6 @@ public class ClayContext
         _layoutElementsOffset = _arena.Allocate<LayoutElement>(maxElements);
         _layoutElementsCount = 0;
 
-        _layoutElementChildrenCapacity = maxChildren;
-        _layoutElementChildrenOffset = _arena.Allocate<int>(maxChildren);
-        _layoutElementChildrenCount = 0;
-
         _openLayoutElementStackCapacity = 256;
         _openLayoutElementStackOffset = _arena.Allocate<int>(256);
         _openLayoutElementStackCount = 0;
@@ -192,7 +184,6 @@ _customConfigsCount = 0;
     }
 
     private Span<LayoutElement> GetLayoutElements() => _arena.GetSpan<LayoutElement>(_layoutElementsOffset, _layoutElementsCapacity);
-    private Span<int> GetLayoutElementChildren() => _arena.GetSpan<int>(_layoutElementChildrenOffset, _layoutElementChildrenCapacity);
     private Span<int> GetOpenLayoutElementStack() => _arena.GetSpan<int>(_openLayoutElementStackOffset, _openLayoutElementStackCapacity);
     private Span<LayoutElementTreeRoot> GetLayoutElementTreeRoots() => _arena.GetSpan<LayoutElementTreeRoot>(_layoutElementTreeRootsOffset, _layoutElementTreeRootsCapacity);
     private Span<int> GetBfsBuffer() => _arena.GetSpan<int>(_bfsBufferOffset, _bfsBufferCapacity);
@@ -210,8 +201,8 @@ _customConfigsCount = 0;
 
     internal int OpenElement(string id, ElementType type)
     {
-        uint oldId = _currentParentId;
-        _currentParentId = HashUtility.HashId(id, oldId);
+        uint parentId = _currentParentId;
+        _currentParentId = HashUtility.HashId(id, parentId);
 
         int index = _layoutElementsCount++;
         var elements = GetLayoutElements();
@@ -222,10 +213,16 @@ _customConfigsCount = 0;
         {
             var stack = GetOpenLayoutElementStack();
             int parentIndex = stack[_openLayoutElementStackCount - 1];
-            var children = GetLayoutElementChildren();
-            children[_layoutElementChildrenCount++] = index;
             ref var parent = ref elements[parentIndex];
-            parent.ChildrenCount++;
+            if (parent.FirstChildIndex == -1)
+            {
+                parent.FirstChildIndex = index;
+            }
+            else
+            {
+                elements[parent.LastChildIndex].NextSiblingIndex = index;
+            }
+            parent.LastChildIndex = index;
         }
         else
         {
@@ -236,9 +233,11 @@ _customConfigsCount = 0;
         elements[index] = new LayoutElement 
         { 
             Id = _currentParentId,
+            ParentId = parentId,
             ElementType = type,
-            ChildrenStartIndex = _layoutElementChildrenCount,
-            ChildrenCount = 0,
+            FirstChildIndex = -1,
+            LastChildIndex = -1,
+            NextSiblingIndex = -1,
             ConfigIndex = -1,
             RectangleConfigIndex = -1,
             BorderConfigIndex = -1,
@@ -253,7 +252,14 @@ _customConfigsCount = 0;
 
     internal void CloseElement()
     {
-        _openLayoutElementStackCount--;
+        if (_openLayoutElementStackCount > 0)
+        {
+            var stack = GetOpenLayoutElementStack();
+            int index = stack[_openLayoutElementStackCount - 1];
+            var elements = GetLayoutElements();
+            _currentParentId = elements[index].ParentId;
+            _openLayoutElementStackCount--;
+        }
     }
 
     internal void ConfigureOpenElement(LayoutConfig config)
@@ -487,7 +493,6 @@ _customConfigsCount = 0;
     {
         var roots = GetLayoutElementTreeRoots();
         var elements = GetLayoutElements();
-        var allChildren = GetLayoutElementChildren();
         var bfsBuffer = GetBfsBuffer();
         var resizableContainerBuffer = GetOpenLayoutElementStack();
 
@@ -511,10 +516,10 @@ _customConfigsCount = 0;
                 bool sizingAlongAxis = (xAxis && parent.Config.LayoutDirection == LayoutDirection.LeftToRight) || (!xAxis && parent.Config.LayoutDirection == LayoutDirection.TopToBottom);
                 float parentChildGap = parent.Config.ChildGap;
 
-                for (int childOffset = 0; childOffset < parent.ChildrenCount; childOffset++)
+                int nonFloatingChildIndex = 0;
+                for (int childIdx = parent.FirstChildIndex; childIdx != -1; childIdx = elements[childIdx].NextSiblingIndex)
                 {
-                    int childElementIndex = allChildren[parent.ChildrenStartIndex + childOffset];
-                    ref LayoutElement childElement = ref elements[childElementIndex];
+                    ref LayoutElement childElement = ref elements[childIdx];
                     
                     // Skip floating elements in normal flow
                     if (childElement.ElementType == ElementType.Floating) continue;
@@ -522,20 +527,20 @@ _customConfigsCount = 0;
                     SizingAxis childSizing = xAxis ? childElement.Config.Sizing.Width : childElement.Config.Sizing.Height;
                     float childSize = xAxis ? childElement.Dimensions.Width : childElement.Dimensions.Height;
 
-                    if (childElement.ElementType != ElementType.Text && childElement.ChildrenCount > 0)
+                    if (childElement.ElementType != ElementType.Text && childElement.FirstChildIndex != -1)
                     {
-                        bfsBuffer[bfsCount++] = childElementIndex;
+                        bfsBuffer[bfsCount++] = childIdx;
                     }
 
                     if (childSizing.Type != SizingType.Percent && childSizing.Type != SizingType.Fixed)
                     {
-                        resizableContainerBuffer[resizableCount++] = childElementIndex;
+                        resizableContainerBuffer[resizableCount++] = childIdx;
                     }
 
                     if (sizingAlongAxis)
                     {
                         innerContentSize += (childSizing.Type == SizingType.Percent ? 0 : childSize);
-                        if (childOffset > 0)
+                        if (nonFloatingChildIndex > 0)
                         {
                             innerContentSize += parentChildGap;
                             totalPaddingAndChildGaps += parentChildGap;
@@ -545,12 +550,12 @@ _customConfigsCount = 0;
                     {
                         innerContentSize = Math.Max(childSize, innerContentSize);
                     }
+                    nonFloatingChildIndex++;
                 }
 
-                for (int childOffset = 0; childOffset < parent.ChildrenCount; childOffset++)
+                for (int childIdx = parent.FirstChildIndex; childIdx != -1; childIdx = elements[childIdx].NextSiblingIndex)
                 {
-                    int childElementIndex = allChildren[parent.ChildrenStartIndex + childOffset];
-                    ref LayoutElement childElement = ref elements[childElementIndex];
+                    ref LayoutElement childElement = ref elements[childIdx];
                     
                     // Skip floating elements in normal flow
                     if (childElement.ElementType == ElementType.Floating) continue;
@@ -723,11 +728,10 @@ _customConfigsCount = 0;
     private void UpdateFitSizingBottomUp()
     {
         var elements = GetLayoutElements();
-        var allChildren = GetLayoutElementChildren();
         for (int i = _layoutElementsCount - 1; i >= 0; i--)
         {
             ref var element = ref elements[i];
-            if (element.ChildrenCount == 0 && element.ElementType != ElementType.Text) continue;
+            if (element.FirstChildIndex == -1 && element.ElementType != ElementType.Text) continue;
 
             if (element.ElementType == ElementType.Text)
             {
@@ -738,34 +742,35 @@ _customConfigsCount = 0;
             float contentWidth = (float)(element.Config.Padding.Left + element.Config.Padding.Right);
             float contentHeight = (float)(element.Config.Padding.Top + element.Config.Padding.Bottom);
 
+            int nonFloatingChildrenCount = 0;
             if (element.Config.LayoutDirection == LayoutDirection.LeftToRight)
             {
                 float maxChildHeight = 0;
-                for (int j = 0; j < element.ChildrenCount; j++)
+                for (int childIdx = element.FirstChildIndex; childIdx != -1; childIdx = elements[childIdx].NextSiblingIndex)
                 {
-                    int childIdx = allChildren[element.ChildrenStartIndex + j];
                     ref var child = ref elements[childIdx];
                     if (child.ElementType == ElementType.Floating) continue;
 
+                    nonFloatingChildrenCount++;
                     contentWidth += child.Dimensions.Width;
                     maxChildHeight = Math.Max(maxChildHeight, child.Dimensions.Height);
                 }
-                contentWidth += Math.Max(0, element.ChildrenCount - 1) * element.Config.ChildGap;
+                contentWidth += Math.Max(0, nonFloatingChildrenCount - 1) * element.Config.ChildGap;
                 contentHeight += maxChildHeight;
             }
             else // TopToBottom
             {
                 float maxChildWidth = 0;
-                for (int j = 0; j < element.ChildrenCount; j++)
+                for (int childIdx = element.FirstChildIndex; childIdx != -1; childIdx = elements[childIdx].NextSiblingIndex)
                 {
-                    int childIdx = allChildren[element.ChildrenStartIndex + j];
                     ref var child = ref elements[childIdx];
                     if (child.ElementType == ElementType.Floating) continue;
 
+                    nonFloatingChildrenCount++;
                     contentHeight += child.Dimensions.Height;
                     maxChildWidth = Math.Max(maxChildWidth, child.Dimensions.Width);
                 }
-                contentHeight += Math.Max(0, element.ChildrenCount - 1) * element.Config.ChildGap;
+                contentHeight += Math.Max(0, nonFloatingChildrenCount - 1) * element.Config.ChildGap;
                 contentWidth += maxChildWidth;
             }
 
@@ -784,7 +789,6 @@ _customConfigsCount = 0;
     {
         var roots = GetLayoutElementTreeRoots();
         var elements = GetLayoutElements();
-        var allChildren = GetLayoutElementChildren();
         var dfsBuffer = GetDfsBuffer();
         var treeNodeVisited = GetTreeNodeVisited();
         var floatingConfigs = GetFloatingConfigs();
@@ -999,17 +1003,14 @@ _customConfigsCount = 0;
 
                     if (currentElement.ElementType != ElementType.Text)
                     {
-                        int childrenCount = currentElement.ChildrenCount;
-                        
                         int validChildrenCount = 0;
                         float totalContentWidth = 0;
                         float totalContentHeight = 0;
                         float maxChildWidth = 0;
                         float maxChildHeight = 0;
 
-                        for (int j = 0; j < childrenCount; j++)
+                        for (int childIdx = currentElement.FirstChildIndex; childIdx != -1; childIdx = elements[childIdx].NextSiblingIndex)
                         {
-                            int childIdx = allChildren[currentElement.ChildrenStartIndex + j];
                             ref LayoutElement child = ref elements[childIdx];
                             if (child.ElementType != ElementType.Floating)
                             {
@@ -1069,9 +1070,8 @@ _customConfigsCount = 0;
                         dfsCount += validChildrenCount;
 
                         int addedCount = 0;
-                        for (int j = 0; j < childrenCount; j++)
+                        for (int childIdx = currentElement.FirstChildIndex; childIdx != -1; childIdx = elements[childIdx].NextSiblingIndex)
                         {
-                            int childIdx = allChildren[currentElement.ChildrenStartIndex + j];
                             ref LayoutElement child = ref elements[childIdx];
                             
                             if (child.ElementType == ElementType.Floating) continue;
