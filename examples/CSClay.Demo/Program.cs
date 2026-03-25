@@ -39,16 +39,7 @@ class Program
         codepoints[260] = 0xF012C;
         codepoints[261] = 0xF0131;
 
-        Font nerdFont;
-        unsafe {
-            fixed (int* pCodepoints = codepoints) {
-                // Raylib-cs usually has a string overload, but let's be safe and use UTF8 bytes if needed.
-                // However, the error said it couldn't convert string to sbyte*.
-                // We can use a fixed sbyte* or just use the managed overload if it exists.
-                // In Raylib-cs 6.0+, LoadFontEx has a managed string overload.
-                nerdFont = Raylib.LoadFontEx(fontPath, 64, codepoints, 262);
-            }
-        }
+        Font nerdFont = Raylib.LoadFontEx(fontPath, 64, codepoints, 262);
         Raylib.SetTextureFilter(nerdFont.Texture, TextureFilter.Bilinear);
 
         // Text measurement callback using the Nerd Font
