@@ -327,8 +327,10 @@ class Program
                 var canvas = surface.Canvas;
                 canvas.Clear(new SkiaSharp.SKColor((byte)theme.Background.R, (byte)theme.Background.G, (byte)theme.Background.B, (byte)theme.Background.A));
                 
+                using var typeface = SkiaSharp.SKTypeface.FromFile("assets/fonts/JetBrainsMonoNerdFont-Regular.ttf");
+
                 // For SkiaSharp, it won't render the 3D spinning cube, but it will render the rest of the UI.
-                CSClay.Renderers.SkiaSharp.SkiaSharpRenderer.Render(canvas, commands, context);
+                CSClay.Renderers.SkiaSharp.SkiaSharpRenderer.Render(canvas, commands, context, typeface);
                 
                 using var img = surface.Snapshot();
                 using var data = img.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
