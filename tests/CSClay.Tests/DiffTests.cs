@@ -10,8 +10,19 @@ namespace CSClay.Tests;
 public class DiffTests
 {
     private readonly ITestOutputHelper _output;
-    private const string CRepoPath = "/var/home/maxfridbe/Dev/vibecoding/csclay/repro_c";
-    private const string ReferencePath = "/var/home/maxfridbe/Dev/vibecoding/csclay/reference";
+    private static readonly string RepoRoot = GetRepoRoot();
+    private static readonly string CRepoPath = Path.Combine(RepoRoot, "repro_c");
+    private static readonly string ReferencePath = Path.Combine(RepoRoot, "reference");
+
+    private static string GetRepoRoot()
+    {
+        var current = AppDomain.CurrentDomain.BaseDirectory;
+        while (current != null && !File.Exists(Path.Combine(current, "CSClay.slnx")))
+        {
+            current = Path.GetDirectoryName(current);
+        }
+        return current ?? throw new DirectoryNotFoundException("Could not find repository root (CSClay.slnx)");
+    }
 
     public DiffTests(ITestOutputHelper output)
     {
