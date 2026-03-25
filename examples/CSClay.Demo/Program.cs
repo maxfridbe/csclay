@@ -10,6 +10,7 @@ class Program
 {
     static bool showModal = false;
     static float globalScale = 1.0f;
+    static float scrollY = 0f;
 
     static void Main()
     {
@@ -31,15 +32,18 @@ class Program
         int[] codepoints = new int[512];
         for (int i = 0; i < 256; i++) codepoints[i] = i; // Basic Latin
         // Add specific icons used in the demo:
-        // 󰀘 (U+F0018), 󰉋 (U+F024B), 󰒓 (U+F0493), 󰅖 (U+F0156), 󰄬 (U+F012C), 󰄱 (U+F0131)
+        // 󰀘 (U+F0018), 󰉋 (U+F024B), 󰒓 (U+F0493), 󰅖 (U+F0156), 󰄬 (U+F012C), 󰄱 (U+F0131), 󰋚 (U+F02DA)
         codepoints[256] = 0xF0018; 
         codepoints[257] = 0xF024B;
         codepoints[258] = 0xF0493;
         codepoints[259] = 0xF0156;
         codepoints[260] = 0xF012C;
         codepoints[261] = 0xF0131;
+        codepoints[262] = 0xF02DA;
 
-        Font nerdFont = Raylib.LoadFontEx(fontPath, 64, codepoints, 262);
+        Font nerdFont;
+        // Raylib-cs LoadFontEx managed overload
+        nerdFont = Raylib.LoadFontEx(fontPath, 64, codepoints, 263);
         Raylib.SetTextureFilter(nerdFont.Texture, TextureFilter.Bilinear);
 
         // Text measurement callback using the Nerd Font
@@ -170,6 +174,39 @@ class Program
                                         });
                                     }
                                 );
+                            }
+                        });
+
+                        // Scrollable pane
+                        ScrollContainer("scroll-pane", 
+                            l => l.Sizing(Grow(), Grow()).Direction(LayoutDirection.TopToBottom).ChildGap((ushort)(10 * globalScale)),
+                            cl => cl.Vertical().Offset(0, scrollY),
+                            new Color(25, 29, 36), () => 
+                        {
+                            if (UI.Hovered())
+                            {
+                                float wheel = Raylib.GetMouseWheelMove();
+                                if (wheel != 0)
+                                {
+                                    scrollY += wheel * 30.0f; // Scroll speed
+                                    if (scrollY > 0) scrollY = 0; // Prevent scrolling past top
+                                    // A real implementation would also clamp the bottom based on content height
+                                }
+                            }
+
+                            for (int i = 1; i <= 100; i++)
+                            {
+                                string scrollItemId = $"scroll-item-{i}";
+                                var itemColor = UI.IsHovered(scrollItemId) ? new Color(70, 100, 150) : new Color(45, 49, 57);
+                                
+                                Container(scrollItemId, c => c
+                                    .Sizing(Grow(), Fixed(50 * globalScale))
+                                    .Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center)
+                                    .Padding((ushort)(15 * globalScale), 0)
+                                , itemColor, () => 
+                                {
+                                    Text($"󰋚 Scrollable Item {i}", t => t.Size((ushort)(18 * globalScale)).Color(220, 220, 220));
+                                });
                             }
                         });
                     });
