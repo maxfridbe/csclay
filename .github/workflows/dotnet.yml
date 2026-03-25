@@ -28,13 +28,13 @@ jobs:
       run: dotnet test --no-build --verbosity normal -c Release
 
     - name: Pack Packages
-      run: ./build_pkgs.sh
+      run: ./build_pkgs.sh 0.1.${{ github.run_number }}
 
     - name: Upload NuGet Package
       uses: actions/upload-artifact@v4
       with:
         name: nuget-package
-        path: artifacts/*.nupkg
+        path: artifacts/
 
   release:
     needs: build
