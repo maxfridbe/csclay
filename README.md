@@ -60,6 +60,11 @@ dotnet add package CSClay
 dotnet add package CSClay.Renderers.SkiaSharp
 ```
 
+(Optional) Install the Raylib renderer:
+```bash
+dotnet add package CSClay.Renderers.Raylib
+```
+
 ### 2. Initialization
 Initialize the `ClayArena` and `ClayContext` with your screen dimensions.
 
