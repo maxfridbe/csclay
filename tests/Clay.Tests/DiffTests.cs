@@ -22,6 +22,7 @@ public class DiffTests
     {
         public int Type;
         public float X, Y, W, H;
+        public int Z;
     }
 
     private List<ExpectedCommand> RunCImplementation(string layoutCode, int width, int height)
@@ -33,7 +34,7 @@ public class DiffTests
 #include <stdlib.h>
 
 Clay_Dimensions MockTextMeasure(Clay_StringSlice text, Clay_TextElementConfig *config, void *userData) {{
-    return (Clay_Dimensions) {{ .width = text.length * (config->fontSize * 0.55f), .height = config->fontSize * 1.2f }};
+    return (Clay_Dimensions) {{ .width = text.length * 10.0f, .height = 20.0f }};
 }}
 
 int main() {{
@@ -48,8 +49,8 @@ int main() {{
 
     for (int i = 0; i < commands.length; i++) {{
         Clay_RenderCommand *cmd = &commands.internalArray[i];
-        printf(""%d,%.1f,%.1f,%.1f,%.1f\n"", 
-            cmd->commandType, cmd->boundingBox.x, cmd->boundingBox.y, cmd->boundingBox.width, cmd->boundingBox.height);
+        printf(""%d,%.1f,%.1f,%.1f,%.1f,%d\n"", 
+            cmd->commandType, cmd->boundingBox.x, cmd->boundingBox.y, cmd->boundingBox.width, cmd->boundingBox.height, cmd->zIndex);
     }}
     return 0;
 }}";
@@ -91,7 +92,8 @@ int main() {{
                 X = float.Parse(parts[1]),
                 Y = float.Parse(parts[2]),
                 W = float.Parse(parts[3]),
-                H = float.Parse(parts[4])
+                H = float.Parse(parts[4]),
+                Z = int.Parse(parts[5])
             });
         }
         runProcess.WaitForExit();
@@ -108,8 +110,8 @@ int main() {{
         UI.SetCurrentContext(context);
         context.TextMeasure = (text, config) => 
         {
-            float w = text.Length * (config.FontSize * 0.55f);
-            return new Dimensions(w, config.FontSize * 1.2f);
+            float w = text.Length * 10.0f;
+            return new Dimensions(w, 20.0f);
         };
 
         UI.Begin(arena, new Dimensions(width, height));
@@ -128,7 +130,7 @@ int main() {{
             if (i < expected.Count)
             {
                 var e = expected[i];
-                sb.Append($"EXPECTED: Type {e.Type}, BB {{{e.X:F1}, {e.Y:F1}, {e.W:F1}, {e.H:F1}}} | ");
+                sb.Append($"EXPECTED: Type {e.Type}, BB {{{e.X:F1}, {e.Y:F1}, {e.W:F1}, {e.H:F1}}}, Z {e.Z} | ");
             }
             else
             {
@@ -138,7 +140,13 @@ int main() {{
             if (i < actual.Length)
             {
                 var a = actual[i];
-                sb.Append($"ACTUAL: Type {(int)a.CommandType}, BB {{{a.BoundingBox.X:F1}, {a.BoundingBox.Y:F1}, {a.BoundingBox.Width:F1}, {a.BoundingBox.Height:F1}}}");
+                string textInfo = "";
+                if (a.CommandType == RenderCommandType.Text)
+                {
+                    var textData = a.RenderData.Text;
+                    textInfo = $" | TEXT: \"{context.GetString(textData.TextIndex).Substring(textData.LineStart, textData.LineLength)}\"";
+                }
+                sb.Append($"ACTUAL: Type {(int)a.CommandType}, BB {{{a.BoundingBox.X:F1}, {a.BoundingBox.Y:F1}, {a.BoundingBox.Width:F1}, {a.BoundingBox.Height:F1}}}, Z {a.ZIndex}{textInfo}");
             }
             else
             {
@@ -159,6 +167,7 @@ int main() {{
             Assert.Equal(e.Y, a.BoundingBox.Y, 1);
             Assert.Equal(e.W, a.BoundingBox.Width, 1);
             Assert.Equal(e.H, a.BoundingBox.Height, 1);
+            Assert.Equal(e.Z, a.ZIndex);
         }
     }
 
@@ -299,6 +308,105 @@ int main() {{
             () => {
                 UI.Container("root", new LayoutConfig { Sizing = new Sizing { Width = SizingAxis.Fixed(800), Height = SizingAxis.Fixed(600) } }, () => {
                     UI.Text("Hello, world!", new TextConfig { FontSize = 20 });
+                });
+            }, 800, 600);
+    }
+
+    [Fact]
+    public void TestFloatingAndZIndex()
+    {
+        AssertParity(@"
+            CLAY(CLAY_ID(""root""), { 
+                .layout = { .sizing = { CLAY_SIZING_FIXED(800), CLAY_SIZING_FIXED(600) } },
+                .backgroundColor = { 40, 44, 52, 255 }
+            }) {
+                CLAY(CLAY_ID(""parent""), { 
+                    .layout = { .sizing = { CLAY_SIZING_FIXED(200), CLAY_SIZING_FIXED(200) } },
+                    .backgroundColor = { 100, 100, 100, 255 }
+                }) {
+                    CLAY(CLAY_ID(""floating""), { 
+                        .floating = { 
+                            .attachPoints = { .element = CLAY_ATTACH_POINT_LEFT_TOP, .parent = CLAY_ATTACH_POINT_RIGHT_BOTTOM },
+                            .zIndex = 100,
+                            .attachTo = CLAY_ATTACH_TO_PARENT
+                        },
+                        .layout = { .sizing = { CLAY_SIZING_FIXED(100), CLAY_SIZING_FIXED(100) } },
+                        .backgroundColor = { 255, 255, 0, 255 }
+                    }) {}
+                }
+                CLAY(CLAY_ID(""sibling""), { 
+                    .layout = { .sizing = { CLAY_SIZING_FIXED(200), CLAY_SIZING_FIXED(200) } },
+                    .backgroundColor = { 200, 200, 200, 255 }
+                }) {}
+            }",
+            () => {
+                UI.Container("root", new LayoutConfig { 
+                    Sizing = new Sizing { Width = SizingAxis.Fixed(800), Height = SizingAxis.Fixed(600) } 
+                }, new Color(40, 44, 52), () => {
+                    UI.Container("parent", new LayoutConfig { 
+                        Sizing = new Sizing { Width = SizingAxis.Fixed(200), Height = SizingAxis.Fixed(200) } 
+                    }, new Color(100, 100, 100), () => {
+                        UI.FloatingContainer("floating", new LayoutConfig { 
+                            Sizing = new Sizing { Width = SizingAxis.Fixed(100), Height = SizingAxis.Fixed(100) } 
+                        }, new FloatingConfig { 
+                            AttachPoints = new FloatingAttachPoints { Element = FloatingAttachPoint.LeftTop, Parent = FloatingAttachPoint.RightBottom },
+                            ZIndex = 100
+                        }, new Color(255, 255, 0));
+                    });
+                    UI.Container("sibling", new LayoutConfig { 
+                        Sizing = new Sizing { Width = SizingAxis.Fixed(200), Height = SizingAxis.Fixed(200) } 
+                    }, new Color(200, 200, 200));
+                });
+            }, 800, 600);
+    }
+
+    [Fact]
+    public void TestScrollAndScissor()
+    {
+        AssertParity(@"
+            CLAY(CLAY_ID(""root""), { 
+                .layout = { .sizing = { CLAY_SIZING_FIXED(800), CLAY_SIZING_FIXED(600) } } 
+            }) {
+                CLAY(CLAY_ID(""scroll""), { 
+                    .layout = { .sizing = { CLAY_SIZING_FIXED(200), CLAY_SIZING_FIXED(200) } },
+                    .clip = { .vertical = true, .childOffset = { 0, -50 } }
+                }) {
+                    CLAY(CLAY_ID(""content""), { 
+                        .layout = { .sizing = { CLAY_SIZING_FIXED(100), CLAY_SIZING_FIXED(400) } },
+                        .backgroundColor = { 255, 0, 0, 255 }
+                    }) {}
+                }
+            }",
+            () => {
+                UI.Container("root", new LayoutConfig { 
+                    Sizing = new Sizing { Width = SizingAxis.Fixed(800), Height = SizingAxis.Fixed(600) } 
+                }, () => {
+                    UI.ScrollContainer("scroll", new LayoutConfig { 
+                        Sizing = new Sizing { Width = SizingAxis.Fixed(200), Height = SizingAxis.Fixed(200) } 
+                    }, new ClipConfig { Vertical = true, ChildOffset = new Vector2(0, -50) }, () => {
+                        UI.Container("content", new LayoutConfig { 
+                            Sizing = new Sizing { Width = SizingAxis.Fixed(100), Height = SizingAxis.Fixed(400) } 
+                        }, new Color(255, 0, 0));
+                    });
+                });
+            }, 800, 600);
+    }
+
+    [Fact]
+    public void TestTextWrappingAndFit()
+    {
+        AssertParity(@"
+            CLAY(CLAY_ID(""root""), { 
+                .layout = { .sizing = { CLAY_SIZING_FIXED(200), CLAY_SIZING_FIT(0, 0) } },
+                .backgroundColor = { 40, 44, 52, 255 }
+            }) {
+                CLAY_TEXT(CLAY_STRING(""This is a long sentence that should wrap into multiple lines based on the fixed width of the parent.""), CLAY_TEXT_CONFIG({ .fontSize = 20 }));
+            }",
+            () => {
+                UI.Container("root", new LayoutConfig { 
+                    Sizing = new Sizing { Width = SizingAxis.Fixed(200), Height = SizingAxis.Fit() } 
+                }, new Color(40, 44, 52), () => {
+                    UI.Text("This is a long sentence that should wrap into multiple lines based on the fixed width of the parent.", new TextConfig { FontSize = 20 });
                 });
             }, 800, 600);
     }

@@ -707,12 +707,19 @@ _customConfigsCount = 0;
 
                 if (end > start)
                 {
-                    var lineDimensions = TextMeasure(textSpan.Slice(start, end - start), textData.Config);
+                    // Exclude trailing space from width calculation if this isn't the last character in the string
+                    int measureEnd = end;
+                    if (end < textSpan.Length && textSpan[end - 1] == ' ')
+                    {
+                        measureEnd--;
+                    }
+
+                    var lineDimensions = TextMeasure(textSpan.Slice(start, measureEnd - start), textData.Config);
                     wrappedLines[_wrappedTextLinesCount++] = new WrappedTextLine
                     {
                         Dimensions = lineDimensions,
                         StartOffset = start,
-                        Length = end - start
+                        Length = end - start // The command still needs the space for rendering
                     };
                     currentLineHeight += lineDimensions.Height;
                     lineCount++;
