@@ -1,6 +1,6 @@
 using Raylib_cs;
 using CSClay;
-using Color = Clay.Color;
+using Color = CSClay.Color;
 
 namespace CSClay.Demo;
 
@@ -23,17 +23,17 @@ class Program
         {
             // Raylib measurement
             var size = Raylib.MeasureTextEx(Raylib.GetFontDefault(), text.ToString(), config.FontSize, config.LetterSpacing);
-            return new Clay.Dimensions(size.X, size.Y);
+            return new CSClay.Dimensions(size.X, size.Y);
         };
 
         while (!Raylib.WindowShouldClose())
         {
             // 1. Update Interaction State
             var mousePos = Raylib.GetMousePosition();
-            UI.SetPointerState(new Clay.Vector2(mousePos.X, mousePos.Y), Raylib.IsMouseButtonDown(MouseButton.Left));
+            UI.SetPointerState(new CSClay.Vector2(mousePos.X, mousePos.Y), Raylib.IsMouseButtonDown(MouseButton.Left));
 
             // 2. Declare UI
-            UI.Begin(arena, new Clay.Dimensions(Raylib.GetScreenWidth(), Raylib.GetScreenHeight()));
+            UI.Begin(arena, new CSClay.Dimensions(Raylib.GetScreenWidth(), Raylib.GetScreenHeight()));
             
             UI.Container("root", new LayoutConfig 
             { 
