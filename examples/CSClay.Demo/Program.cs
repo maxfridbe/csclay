@@ -320,6 +320,23 @@ class Program
 
             var commands = UI.End();
 
+            if (Raylib.IsKeyPressed(KeyboardKey.P))
+            {
+                var info = new SkiaSharp.SKImageInfo(Raylib.GetScreenWidth(), Raylib.GetScreenHeight());
+                using var surface = SkiaSharp.SKSurface.Create(info);
+                var canvas = surface.Canvas;
+                canvas.Clear(new SkiaSharp.SKColor((byte)theme.Background.R, (byte)theme.Background.G, (byte)theme.Background.B, (byte)theme.Background.A));
+                
+                // For SkiaSharp, it won't render the 3D spinning cube, but it will render the rest of the UI.
+                CSClay.Renderers.SkiaSharp.SkiaSharpRenderer.Render(canvas, commands, context);
+                
+                using var img = surface.Snapshot();
+                using var data = img.Encode(SkiaSharp.SKEncodedImageFormat.Png, 100);
+                using var stream = System.IO.File.OpenWrite("screenshot.png");
+                data.SaveTo(stream);
+                System.Console.WriteLine("Saved screenshot.png to disk.");
+            }
+
             // 3. Render
             Raylib.BeginDrawing();
             Raylib.ClearBackground(theme.RaylibBackground);

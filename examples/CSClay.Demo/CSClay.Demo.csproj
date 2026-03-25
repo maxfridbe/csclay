@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\CSClay\CSClay.csproj" />
     <ProjectReference Include="..\..\src\CSClay.Renderers.Raylib\CSClay.Renderers.Raylib.csproj" />
+    <ProjectReference Include="..\..\src\CSClay.Renderers.SkiaSharp\CSClay.Renderers.SkiaSharp.csproj" />
   </ItemGroup>
 
   <ItemGroup>
