@@ -192,6 +192,7 @@ class Program
                                 .Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center)
                                 .Padding((ushort)(10 * globalScale), 0)
                                 .Color(color)
+                                .CornerRadius(8 * globalScale)
                             , () => 
                             {
                                 Text($"󰉋 Menu Item {i}", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextPrimary));
@@ -227,6 +228,7 @@ class Program
                         Container(modalBtnId, c => c
                             .Padding((ushort)(20 * globalScale), (ushort)(10 * globalScale))
                             .Color(btnColor)
+                            .CornerRadius(8 * globalScale)
                         , () => 
                         {
                             Text("󰒓 Open Settings", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextPrimary));
@@ -305,6 +307,7 @@ class Program
                                     .Align(LayoutAlignmentX.Left, LayoutAlignmentY.Center)
                                     .Padding((ushort)(15 * globalScale), 0)
                                     .Color(itemColor)
+                                    .CornerRadius(8 * globalScale)
                                 , () => 
                                 {
                                     Text($"󰋚 Scrollable Item {i}", t => t.Size((ushort)(18 * globalScale)).Color(theme.TextPrimary));

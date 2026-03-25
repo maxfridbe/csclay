@@ -71,6 +71,7 @@ public static class Clay
     {
         public LayoutConfig Config = new();
         public Color? BackgroundColor { get; private set; }
+        public CornerRadius CornerRadiusData { get; private set; }
         public FloatingConfig? FloatingConfig { get; private set; }
         public ClipConfig? ClipConfig { get; private set; }
 
@@ -82,6 +83,8 @@ public static class Clay
         public LayoutBuilder Direction(LayoutDirection direction) { Config.LayoutDirection = direction; return this; }
         public LayoutBuilder Color(float r, float g, float b, float a = 255) { BackgroundColor = new CSClay.Color(r, g, b, a); return this; }
         public LayoutBuilder Color(CSClay.Color color) { BackgroundColor = color; return this; }
+        public LayoutBuilder CornerRadius(float radius) { CornerRadiusData = new CSClay.CornerRadius { TopLeft = radius, TopRight = radius, BottomLeft = radius, BottomRight = radius }; return this; }
+        public LayoutBuilder CornerRadius(float topLeft, float topRight, float bottomLeft, float bottomRight) { CornerRadiusData = new CSClay.CornerRadius { TopLeft = topLeft, TopRight = topRight, BottomLeft = bottomLeft, BottomRight = bottomRight }; return this; }
         
         public LayoutBuilder Floating(Action<FloatingBuilder> floatingBuilder)
         {
@@ -139,9 +142,9 @@ public static class Clay
         context.OpenElement(id, ElementType.None);
         context.ConfigureOpenElement(builder.Config);
         
-        if (builder.BackgroundColor.HasValue)
+        if (builder.BackgroundColor.HasValue || builder.CornerRadiusData.TopLeft > 0 || builder.CornerRadiusData.TopRight > 0 || builder.CornerRadiusData.BottomLeft > 0 || builder.CornerRadiusData.BottomRight > 0)
         {
-            context.ConfigureRectangleElement(new RectangleConfig { Color = builder.BackgroundColor.Value });
+            context.ConfigureRectangleElement(new RectangleConfig { Color = builder.BackgroundColor ?? new Color(0,0,0,0), CornerRadius = builder.CornerRadiusData });
         }
         
         if (builder.FloatingConfig.HasValue)
@@ -176,9 +179,9 @@ public static class Clay
         context.ConfigureOpenElement(builder.Config);
         context.ConfigureCustomElement(new CustomConfig { CustomDataId = customDataId });
 
-        if (builder.BackgroundColor.HasValue)
+        if (builder.BackgroundColor.HasValue || builder.CornerRadiusData.TopLeft > 0 || builder.CornerRadiusData.TopRight > 0 || builder.CornerRadiusData.BottomLeft > 0 || builder.CornerRadiusData.BottomRight > 0)
         {
-            context.ConfigureRectangleElement(new RectangleConfig { Color = builder.BackgroundColor.Value });
+            context.ConfigureRectangleElement(new RectangleConfig { Color = builder.BackgroundColor ?? new Color(0,0,0,0), CornerRadius = builder.CornerRadiusData });
         }
 
         context.CloseElement();
