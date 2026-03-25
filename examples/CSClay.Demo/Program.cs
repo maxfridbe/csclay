@@ -20,15 +20,36 @@ class Program
         Raylib.InitWindow(screenWidth, screenHeight, "CSClay - Fluent Raylib Demo");
         Raylib.SetTargetFPS(60);
 
-        // Load Nerd Font
-        string fontPath = "assets/fonts/JetBrainsMonoNerdFont-Regular.ttf";
-        // We load a large size to allow for scaling without pixelation
-        Font nerdFont = Raylib.LoadFontEx(fontPath, 64, null, 0);
-        Raylib.SetTextureFilter(nerdFont.Texture, TextureFilter.Bilinear);
-
         var arena = new ClayArena(1024 * 1024 * 10); // 10MB
         var context = new ClayContext(arena);
         UI.SetCurrentContext(context);
+
+        // Load Nerd Font with icons
+        string fontPath = "assets/fonts/JetBrainsMonoNerdFont-Regular.ttf";
+        
+        // Define codepoint ranges for Nerd Font (Basic Latin + Private Use Area for icons)
+        int[] codepoints = new int[512];
+        for (int i = 0; i < 256; i++) codepoints[i] = i; // Basic Latin
+        // Add specific icons used in the demo:
+        // 󰀘 (U+F0018), 󰉋 (U+F024B), 󰒓 (U+F0493), 󰅖 (U+F0156), 󰄬 (U+F012C), 󰄱 (U+F0131)
+        codepoints[256] = 0xF0018; 
+        codepoints[257] = 0xF024B;
+        codepoints[258] = 0xF0493;
+        codepoints[259] = 0xF0156;
+        codepoints[260] = 0xF012C;
+        codepoints[261] = 0xF0131;
+
+        Font nerdFont;
+        unsafe {
+            fixed (int* pCodepoints = codepoints) {
+                // Raylib-cs usually has a string overload, but let's be safe and use UTF8 bytes if needed.
+                // However, the error said it couldn't convert string to sbyte*.
+                // We can use a fixed sbyte* or just use the managed overload if it exists.
+                // In Raylib-cs 6.0+, LoadFontEx has a managed string overload.
+                nerdFont = Raylib.LoadFontEx(fontPath, 64, codepoints, 262);
+            }
+        }
+        Raylib.SetTextureFilter(nerdFont.Texture, TextureFilter.Bilinear);
 
         // Text measurement callback using the Nerd Font
         context.TextMeasure = (text, config) =>
@@ -37,6 +58,14 @@ class Program
             return new CSClay.Dimensions(size.X, size.Y);
         };
 
+        RunMainLoop(arena, context, nerdFont);
+
+        Raylib.UnloadFont(nerdFont);
+        Raylib.CloseWindow();
+    }
+
+    static void RunMainLoop(ClayArena arena, ClayContext context, Font nerdFont)
+    {
         while (!Raylib.WindowShouldClose())
         {
             // 0. Handle Scale Input
@@ -162,9 +191,6 @@ class Program
 
             Raylib.EndDrawing();
         }
-
-        Raylib.UnloadFont(nerdFont);
-        Raylib.CloseWindow();
     }
 
     static void RenderWithNerdFont(Span<RenderCommand> commands, ClayContext context, Font font)
